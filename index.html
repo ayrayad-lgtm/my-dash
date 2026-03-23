@@ -195,7 +195,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;pad
     </h1>
   </div>
   <div class="header-right">
-    <div class="total-num" id="hdr-total">25</div>
+    <div class="total-num" id="hdr-total" contenteditable="true">25</div>
     <div class="total-label"><span contenteditable="true">Ads Delivered</span></div>
   </div>
 </header>
@@ -422,7 +422,7 @@ document.addEventListener('click',e=>{
 function del(arr,i,fn){if(arr.length<=1){alert('Need at least 1 row.');return;}arr.splice(i,1);fn();syncTotal();}
 
 /* ── SYNC TOTAL ── */
-function syncTotal(){$('hdr-total').textContent=sum(D.categories);}
+function syncTotal(){/* manual — user edits header directly */}
 
 /* ════════════════════
    METRICS

@@ -3,318 +3,426 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Ads Report — Week 3 Editable</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<title>Ads Report Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#F7F5F0;--surface:#FFF;--surface2:#F0EDE6;--border:rgba(0,0,0,.08);
+  --bg:#F7F5F0;--surface:#FFF;--s2:#F0EDE6;--border:rgba(0,0,0,.08);
   --text:#1A1A1A;--muted:#888580;
   --a2:#E85D26;--a3:#3B7DD8;--a4:#2BA87E;--a5:#9063CD;--a6:#E6A020;
   --danger:#E24B4A;--r:12px;
+  --nav-h:56px;--tab-h:44px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{font-size:15px}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding:32px;-webkit-font-smoothing:antialiased}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
 @media print{
-  body{background:#fff;padding:14px}
-  .no-print{display:none!important}
+  .no-print,.app-nav,.week-tabs{display:none!important}
+  body{padding:0}
+  .page-wrap{padding:16px}
   [contenteditable]{outline:none!important}
+  .comment-body{border:none!important;background:none!important;resize:none}
+  .monthly-page-header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
-/* ── TOP BAR ── */
-.topbar{
-  position:sticky;top:12px;z-index:100;
-  background:var(--a3);color:#fff;
-  font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
-  padding:10px 18px;border-radius:8px;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  margin-bottom:22px;box-shadow:0 2px 14px rgba(59,125,216,.22);
+/* ════════════════ APP NAV ════════════════ */
+.app-nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:var(--nav-h);
+  background:#1A1A1A;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;gap:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
 }
-.topbar-left{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.topbar-right{display:flex;gap:8px}
-.tbtn{
-  background:rgba(255,255,255,.18);border:none;color:#fff;
-  font-family:'DM Sans',sans-serif;font-weight:600;font-size:11px;
-  letter-spacing:.1em;text-transform:uppercase;
-  padding:7px 14px;border-radius:6px;cursor:pointer;
-  transition:background .18s;white-space:nowrap;
-}
-.tbtn:hover{background:rgba(255,255,255,.32)}
+.nav-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.nav-logo span{color:var(--a2)}
+.nav-month{display:flex;align-items:center;gap:8px}
+.nav-month-label{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;min-width:140px;text-align:center}
+.nav-arrow{background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.nav-arrow:hover{background:rgba(255,255,255,.22)}
+.nav-right{display:flex;gap:8px;align-items:center}
+.nav-btn{background:rgba(255,255,255,.12);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:6px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.nav-btn:hover{background:rgba(255,255,255,.24)}
+.nav-btn.accent{background:var(--a2)}
+.nav-btn.accent:hover{background:#d04e1a}
 
-/* ── EDITABLE ── */
+/* ════════════════ WEEK TABS ════════════════ */
+.week-tabs{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:190;
+  height:var(--tab-h);
+  background:var(--surface);
+  border-bottom:.5px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:4px;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+}
+.wtab{
+  padding:6px 16px;border-radius:6px;border:none;
+  background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+  color:var(--muted);cursor:pointer;transition:background .15s,color .15s;white-space:nowrap;
+}
+.wtab:hover{background:var(--s2);color:var(--text)}
+.wtab.active{background:var(--text);color:#fff}
+.wtab.monthly{margin-left:auto;background:var(--s2);color:var(--a3);font-weight:600;border:.5px solid rgba(59,125,216,.2)}
+.wtab.monthly.active{background:var(--a3);color:#fff;border-color:var(--a3)}
+.wtab.monthly:hover:not(.active){background:rgba(59,125,216,.1)}
+.week-status{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:600;margin-left:4px}
+.ws-has-data{background:rgba(43,168,126,.15);color:#1a7a5a}
+.ws-empty{background:rgba(0,0,0,.06);color:var(--muted)}
+
+/* ════════════════ PAGE WRAP ════════════════ */
+.page-wrap{
+  max-width:1100px;margin:0 auto;
+  padding-top:calc(var(--nav-h) + var(--tab-h) + 28px);
+  padding-bottom:40px;padding-left:28px;padding-right:28px;
+}
+
+/* ════════════════ EDITABLE ════════════════ */
 [contenteditable="true"]{outline:none;border-radius:4px;cursor:text;transition:box-shadow .15s,background .15s;min-width:6px;display:inline-block}
-[contenteditable="true"]:hover{box-shadow:0 0 0 2px rgba(59,125,216,.3);background:rgba(59,125,216,.05)}
-[contenteditable="true"]:focus{box-shadow:0 0 0 2px var(--a3);background:rgba(59,125,216,.08)}
+[contenteditable="true"]:hover{box-shadow:0 0 0 2px rgba(59,125,216,.28);background:rgba(59,125,216,.04)}
+[contenteditable="true"]:focus{box-shadow:0 0 0 2px var(--a3);background:rgba(59,125,216,.07)}
 
-/* ── PAGE ── */
-.page{max-width:1100px;margin:0 auto}
+/* ════════════════ HEADER ════════════════ */
+.report-header{display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;padding-bottom:24px;border-bottom:1.5px solid var(--text);margin-bottom:20px}
+.report-tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500}
+.report-title{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1;letter-spacing:-.03em}
+.report-title em{font-style:normal;color:var(--a2)}
+.total-num{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(50px,7vw,76px);line-height:1;letter-spacing:-.04em;color:var(--a2);text-align:right}
+.total-lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px;font-weight:500;text-align:right}
 
-/* ── HEADER ── */
-.header{display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;padding-bottom:26px;border-bottom:1.5px solid var(--text);margin-bottom:20px}
-.header-tag{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500}
-.header-title{font-family:'Syne',sans-serif;font-size:clamp(34px,5vw,54px);font-weight:800;line-height:1;letter-spacing:-.03em}
-.header-title em{font-style:normal;color:var(--a2)}
-.header-right{text-align:right}
-.total-num{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(52px,8vw,80px);line-height:1;letter-spacing:-.04em;color:var(--a2)}
-.total-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px;font-weight:500}
-
-/* ── GRID ── */
+/* ════════════════ GRID ════════════════ */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .mb{margin-bottom:16px}
 
-/* ── CARD ── */
+/* ════════════════ CARD ════════════════ */
 .card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:22px;position:relative}
 
-/* ── CARD LABEL ── */
+/* ════════════════ CLABEL ════════════════ */
 .clabel{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .clabel::after{content:'';flex:1;height:.5px;background:var(--border)}
 
-/* ── METRIC ── */
-.metric{background:var(--surface2);border-radius:10px;padding:16px 18px;border-left:3px solid var(--mc,#1A1A1A);position:relative}
-.metric-num{font-family:'Syne',sans-serif;font-weight:800;font-size:36px;line-height:1;letter-spacing:-.03em;color:var(--mc,#1A1A1A)}
+/* ════════════════ METRIC ════════════════ */
+.metric{background:var(--s2);border-radius:10px;padding:16px 18px;border-left:3px solid var(--mc,#1A1A1A);position:relative}
+.metric-num{font-family:'Syne',sans-serif;font-weight:800;font-size:34px;line-height:1;letter-spacing:-.03em;color:var(--mc,#1A1A1A)}
 .metric-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-top:6px}
 .metric-sub{font-size:12px;color:var(--muted);margin-top:3px}
 
-/* ── BAR ROW ── */
-.bar-row{display:grid;grid-template-columns:130px 1fr 32px 28px;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid var(--border)}
+/* ════════════════ BAR ROW ════════════════ */
+.bar-row{display:grid;grid-template-columns:130px 1fr 32px 26px;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid var(--border)}
 .bar-row:last-child{border-bottom:none;padding-bottom:0}
 .bar-row:first-child{padding-top:0}
 .bar-name{font-size:12px;font-weight:500}
 .bar-track{height:7px;background:rgba(0,0,0,.06);border-radius:99px;overflow:hidden}
 .bar-fill{height:100%;border-radius:99px;transition:width .4s cubic-bezier(.22,1,.36,1)}
-.bar-val{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-align:right;padding:2px 4px}
+.bar-val{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-align:right;padding:2px 3px}
 
-/* ── PIPE ROW ── */
+/* ════════════════ PIPE ROW ════════════════ */
 .pipe-row{display:flex;align-items:center;gap:10px}
 .pipe-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.pipe-name{font-size:12px;font-weight:500;flex:0 0 120px}
+.pipe-name{font-size:12px;font-weight:500;flex:0 0 116px}
 .pipe-track{flex:1;height:6px;background:rgba(0,0,0,.06);border-radius:99px;overflow:hidden}
 .pipe-fill{height:100%;border-radius:99px;transition:width .4s cubic-bezier(.22,1,.36,1)}
-.pipe-val{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;min-width:20px;text-align:right;padding:2px 4px}
+.pipe-val{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;min-width:20px;text-align:right;padding:2px 3px}
 
-/* ── LEGEND ── */
+/* ════════════════ LEGEND ════════════════ */
 .leg{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--border);font-size:12px}
 .leg:last-child{border:none}
 .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .leg-name{flex:1}
-.leg-val{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;min-width:24px;text-align:right;padding:2px 4px}
+.leg-val{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;min-width:24px;text-align:right;padding:2px 3px}
 
-/* ── TAGS ── */
+/* ════════════════ TAGS ════════════════ */
 .tags{display:flex;flex-wrap:wrap;gap:7px;padding-top:4px}
-.tag{display:flex;align-items:center;gap:6px;background:var(--surface2);border:.5px solid var(--border);border-radius:99px;padding:5px 10px 5px 6px;font-size:12px}
+.tag{display:flex;align-items:center;gap:6px;background:var(--s2);border:.5px solid var(--border);border-radius:99px;padding:5px 10px 5px 6px;font-size:12px}
 .tag-badge{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;flex-shrink:0;color:#fff}
 
-/* ── SUBJECT BAR ── */
-.subj-bar{display:flex;gap:4px;height:28px;border-radius:6px;overflow:hidden}
-.subj-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;transition:flex .4s cubic-bezier(.22,1,.36,1);min-width:28px}
+/* ════════════════ SEGMENT BARS ════════════════ */
+.seg-bar{display:flex;gap:4px;height:28px;border-radius:6px;overflow:hidden}
+.seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;transition:flex .4s cubic-bezier(.22,1,.36,1);min-width:28px}
+.seg-sm{height:20px;font-size:10px}
 
-/* ── ADD / DEL ── */
-.add-btn{
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  background:none;border:.5px dashed rgba(59,125,216,.4);
-  color:var(--a3);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
-  letter-spacing:.1em;text-transform:uppercase;
-  padding:7px 14px;border-radius:8px;cursor:pointer;
-  margin-top:10px;width:100%;
-  transition:background .15s,border-color .15s;
-}
+/* ════════════════ ADD / DEL ════════════════ */
+.add-btn{display:flex;align-items:center;justify-content:center;gap:5px;background:none;border:.5px dashed rgba(59,125,216,.4);color:var(--a3);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-radius:8px;cursor:pointer;margin-top:10px;width:100%;transition:background .15s,border-color .15s}
 .add-btn:hover{background:rgba(59,125,216,.06);border-color:rgba(59,125,216,.7)}
-.del-btn{
-  background:none;border:none;color:rgba(0,0,0,.18);font-size:14px;
-  cursor:pointer;padding:2px 4px;border-radius:4px;
-  transition:color .15s,background .15s;flex-shrink:0;line-height:1;
-}
+.del-btn{background:none;border:none;color:rgba(0,0,0,.18);font-size:14px;cursor:pointer;padding:2px 4px;border-radius:4px;transition:color .15s,background .15s;flex-shrink:0;line-height:1}
 .del-btn:hover{color:var(--danger);background:rgba(228,75,74,.08)}
 
-/* ── SWATCH ── */
+/* ════════════════ SWATCH / COLOR PICKER ════════════════ */
 .swatch{width:12px;height:12px;border-radius:50%;flex-shrink:0;cursor:pointer;border:.5px solid rgba(0,0,0,.1);transition:transform .15s}
 .swatch:hover{transform:scale(1.3)}
-
-/* ── COLOR POPUP ── */
 .color-popup{position:fixed;z-index:500;background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-wrap:wrap;gap:7px;width:152px;box-shadow:0 4px 20px rgba(0,0,0,.12)}
 .color-popup.hidden{display:none}
-.cp-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s}
+.cp-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
 .cp-dot:hover{transform:scale(1.15);border-color:rgba(0,0,0,.2)}
-.cp-dot.active{border-color:#000;transform:scale(1.1)}
+.cp-dot.active{border-color:#000}
 
-/* ── FOOTER ── */
-.footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:18px;border-top:.5px solid var(--border)}
-.footer-note{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.print-btn{background:var(--text);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;transition:opacity .2s}
-.print-btn:hover{opacity:.8}
+/* ════════════════ COMMENT ════════════════ */
+.comment-wrap{margin-top:14px;padding-top:12px;border-top:.5px dashed rgba(0,0,0,.12)}
+.comment-hdr{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.comment-body{width:100%;min-height:44px;resize:vertical;background:rgba(0,0,0,.025);border:.5px solid rgba(0,0,0,.09);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);line-height:1.6;transition:border-color .15s;box-sizing:border-box}
+.comment-body:focus{outline:none;border-color:var(--a3);background:rgba(59,125,216,.03)}
+.comment-body::placeholder{color:var(--muted);opacity:.6}
+
+/* ════════════════ SEC-DIV ════════════════ */
 .sec-div{margin-top:14px;padding-top:14px;border-top:.5px solid var(--border)}
 
-/* ── TEAM SPLIT BAR ── */
-.team-bar-wrap{margin-top:6px}
-.team-bar{display:flex;height:20px;border-radius:6px;overflow:hidden;gap:3px}
-.team-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;min-width:24px}
+/* ════════════════ FOOTER ════════════════ */
+.report-footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:18px;border-top:.5px solid var(--border)}
+.footer-note{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 
-/* ── COMMENT BOX ── */
-.comment-wrap{margin-top:14px;padding-top:12px;border-top:.5px dashed rgba(0,0,0,.12)}
-.comment-header{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.comment-icon{font-size:11px;color:var(--muted)}
-.comment-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.comment-body{
-  width:100%;min-height:48px;resize:vertical;
-  background:rgba(0,0,0,.025);
-  border:.5px solid rgba(0,0,0,.09);
-  border-radius:8px;
-  padding:10px 12px;
-  font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);
-  line-height:1.6;
-  transition:border-color .15s,background .15s;
-  box-sizing:border-box;
+/* ════════════════ MONTHLY VIEW ════════════════ */
+.monthly-page-header{
+  background:var(--text);color:#fff;
+  border-radius:var(--r);padding:28px 32px;
+  margin-bottom:20px;
+  display:flex;justify-content:space-between;align-items:center;
 }
-.comment-body:focus{outline:none;border-color:var(--a3);background:rgba(59,125,216,.03)}
-.comment-body::placeholder{color:var(--muted);opacity:.7}
-@media print{.comment-wrap{border-top:.5px solid rgba(0,0,0,.1)}.comment-body{border:none;background:none;padding:4px 0;resize:none;min-height:unset}}
+.mth-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(28px,4vw,44px);line-height:1;letter-spacing:-.03em}
+.mth-title span{color:var(--a2)}
+.mth-total-box{text-align:right}
+.mth-total-num{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(44px,6vw,68px);line-height:1;color:var(--a2)}
+.mth-total-lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:4px}
+.week-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.wscard{background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:16px 18px}
+.wscard-week{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.wscard-num{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;line-height:1;color:var(--a2)}
+.wscard-label{font-size:11px;color:var(--muted);margin-top:4px}
+.monthly-section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.01em;margin-bottom:14px;padding-bottom:10px;border-bottom:.5px solid var(--border)}
+@media print{
+  .monthly-page-header{background:#1A1A1A!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #weekly-view{display:none!important}
+}
 </style>
 </head>
 <body>
 
-<div class="topbar no-print">
-  <div class="topbar-left">
-    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    Click any text or number to edit · + to add rows · × to delete
+<!-- ══════════════ APP NAV ══════════════ -->
+<nav class="app-nav no-print">
+  <div class="nav-logo">Ads <span>Report</span></div>
+  <div class="nav-month">
+    <button class="nav-arrow" onclick="shiftMonth(-1)">&#8592;</button>
+    <span class="nav-month-label" id="nav-month-label">March 2026</span>
+    <button class="nav-arrow" onclick="shiftMonth(1)">&#8594;</button>
   </div>
-  <div class="topbar-right">
-    <button class="tbtn" onclick="window.print()">⬇ Export PDF</button>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="addMonth()">+ New Month</button>
+    <button class="nav-btn accent" onclick="exportPDF()">&#8595; Export PDF</button>
   </div>
+</nav>
+
+<!-- ══════════════ WEEK TABS ══════════════ -->
+<div class="week-tabs no-print" id="week-tabs">
+  <button class="wtab" id="tab-w1" onclick="switchWeek(1)">Week 1</button>
+  <button class="wtab" id="tab-w2" onclick="switchWeek(2)">Week 2</button>
+  <button class="wtab" id="tab-w3" onclick="switchWeek(3)">Week 3</button>
+  <button class="wtab" id="tab-w4" onclick="switchWeek(4)">Week 4</button>
+  <button class="wtab monthly" id="tab-monthly" onclick="switchToMonthly()">&#128197; Monthly Overview</button>
 </div>
 
-<div class="page">
+<!-- ══════════════ WEEKLY VIEW ══════════════ -->
+<div id="weekly-view">
+<div class="page-wrap">
 
-<!-- HEADER -->
-<header class="header">
-  <div>
-    <p class="header-tag"><span contenteditable="true">Weekly Performance Report</span></p>
-    <h1 class="header-title">
-      <span contenteditable="true">March</span>&nbsp;<em contenteditable="true">Week 3</em>
-    </h1>
-  </div>
-  <div class="header-right">
-    <div class="total-num" id="hdr-total" contenteditable="true">25</div>
-    <div class="total-label"><span contenteditable="true">Ads Delivered</span></div>
-  </div>
-</header>
+  <header class="report-header">
+    <div>
+      <p class="report-tag"><span contenteditable="true" id="hdr-tag">Weekly Performance Report</span></p>
+      <h1 class="report-title"><span contenteditable="true" id="hdr-month">March</span>&nbsp;<em contenteditable="true" id="hdr-week">Week 3</em></h1>
+    </div>
+    <div>
+      <div class="total-num" contenteditable="true" id="hdr-total">25</div>
+      <div class="total-lbl"><span contenteditable="true" id="hdr-total-lbl">Ads Delivered</span></div>
+    </div>
+  </header>
 
-<!-- METRICS -->
-<div class="g4 mb" id="metrics-grid"></div>
+  <!-- METRICS -->
+  <div class="g4 mb" id="metrics-grid"></div>
 
-<!-- ROW 2: CATEGORY + PIPELINE -->
-<div class="g2 mb">
-  <div class="card">
-    <p class="clabel"><span contenteditable="true">Type of Ads</span></p>
-    <div id="cat-rows"></div>
-    <button class="add-btn no-print" onclick="addCatRow()">+ Add category</button>
-    <div class="comment-wrap">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for this section…"></textarea>
-    </div>
-  </div>
-  <div class="card">
-    <p class="clabel"><span contenteditable="true">AD Sub-Status Pipeline</span></p>
-    <div id="pipe-rows" style="display:flex;flex-direction:column;gap:10px"></div>
-    <button class="add-btn no-print" onclick="addPipeRow()">+ Add stage</button>
-    <div class="sec-div">
-      <p class="clabel"><span contenteditable="true">By Subject</span></p>
-      <div class="subj-bar" id="subj-bar"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px" id="subj-rows"></div>
-      <button class="add-btn no-print" onclick="addSubjRow()" style="margin-top:8px">+ Add subject</button>
-    </div>
-    <div class="sec-div">
-      <p class="clabel"><span contenteditable="true">Team Split</span></p>
-      <div class="team-bar" id="team-bar"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px" id="team-rows"></div>
-      <button class="add-btn no-print" onclick="addTeamRow()" style="margin-top:8px">+ Add team</button>
-    </div>
-    <div class="comment-wrap">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for this section…"></textarea>
-    </div>
-  </div>
-</div>
-
-<!-- ROW 3: GEO + GRADES + LANGUAGE -->
-<div class="g3 mb">
-  <!-- GEO -->
-  <div class="card">
-    <p class="clabel"><span contenteditable="true">Geo-wise Bifurcation</span></p>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
-      <div style="position:relative;width:130px;height:130px">
-        <canvas id="geoChart" width="130" height="130"></canvas>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-          <span id="geo-center" style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;line-height:1">25</span>
-          <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">total</span>
-        </div>
+  <!-- CATEGORY + PIPELINE -->
+  <div class="g2 mb">
+    <div class="card">
+      <p class="clabel"><span contenteditable="true" id="cat-title">Type of Ads</span></p>
+      <div id="cat-rows"></div>
+      <button class="add-btn no-print" onclick="addCatRow()">+ Add category</button>
+      <div class="comment-wrap">
+        <div class="comment-hdr">💬 Comments</div>
+        <textarea class="comment-body" id="comment-cat" placeholder="Add a comment…"></textarea>
       </div>
-      <div id="geo-legend" style="width:100%"></div>
     </div>
-    <button class="add-btn no-print" onclick="addGeoRow()">+ Add region</button>
-    <div class="comment-wrap">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for this section…"></textarea>
-    </div>
-  </div>
-
-  <!-- GRADES -->
-  <div class="card">
-    <p class="clabel"><span contenteditable="true">Grades Wise Bifurcation</span></p>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
-      <div style="position:relative;width:130px;height:130px">
-        <canvas id="gradeChart" width="130" height="130"></canvas>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-          <span id="grade-center" style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;line-height:1">25</span>
-          <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">total</span>
-        </div>
+    <div class="card">
+      <p class="clabel"><span contenteditable="true" id="pipe-title">AD Sub-Status Pipeline</span></p>
+      <div id="pipe-rows" style="display:flex;flex-direction:column;gap:10px"></div>
+      <button class="add-btn no-print" onclick="addPipeRow()">+ Add stage</button>
+      <div class="sec-div">
+        <p class="clabel"><span contenteditable="true">By Subject</span></p>
+        <div class="seg-bar" id="subj-bar"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px" id="subj-rows"></div>
+        <button class="add-btn no-print" onclick="addSubjRow()" style="margin-top:8px">+ Add subject</button>
       </div>
-      <div id="grade-legend" style="width:100%"></div>
-    </div>
-    <button class="add-btn no-print" onclick="addGradeRow()">+ Add grade</button>
-    <div class="comment-wrap">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for this section…"></textarea>
+      <div class="sec-div">
+        <p class="clabel"><span contenteditable="true">Team Split</span></p>
+        <div class="seg-bar seg-sm" id="team-bar"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px" id="team-rows"></div>
+        <button class="add-btn no-print" onclick="addTeamRow()" style="margin-top:8px">+ Add team</button>
+      </div>
+      <div class="comment-wrap">
+        <div class="comment-hdr">💬 Comments</div>
+        <textarea class="comment-body" id="comment-pipe" placeholder="Add a comment…"></textarea>
+      </div>
     </div>
   </div>
 
-  <!-- LANGUAGE -->
-  <div class="card">
-    <p class="clabel"><span contenteditable="true">Language Wise Bifurcation</span></p>
-    <div id="lang-rows"></div>
-    <button class="add-btn no-print" onclick="addLangRow()">+ Add language</button>
-    <div class="comment-wrap">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for this section…"></textarea>
+  <!-- GEO + GRADES + LANGUAGE -->
+  <div class="g3 mb">
+    <div class="card">
+      <p class="clabel"><span contenteditable="true">Geo-wise Bifurcation</span></p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="position:relative;width:130px;height:130px">
+          <canvas id="geoChart" width="130" height="130"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span id="geo-center" style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;line-height:1">25</span>
+            <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">total</span>
+          </div>
+        </div>
+        <div id="geo-legend" style="width:100%"></div>
+      </div>
+      <button class="add-btn no-print" onclick="addGeoRow()">+ Add region</button>
+      <div class="comment-wrap">
+        <div class="comment-hdr">💬 Comments</div>
+        <textarea class="comment-body" id="comment-geo" placeholder="Add a comment…"></textarea>
+      </div>
+    </div>
+    <div class="card">
+      <p class="clabel"><span contenteditable="true">Grades Wise Bifurcation</span></p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="position:relative;width:130px;height:130px">
+          <canvas id="gradeChart" width="130" height="130"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span id="grade-center" style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;line-height:1">25</span>
+            <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">total</span>
+          </div>
+        </div>
+        <div id="grade-legend" style="width:100%"></div>
+      </div>
+      <button class="add-btn no-print" onclick="addGradeRow()">+ Add grade</button>
+      <div class="comment-wrap">
+        <div class="comment-hdr">💬 Comments</div>
+        <textarea class="comment-body" id="comment-grade" placeholder="Add a comment…"></textarea>
+      </div>
+    </div>
+    <div class="card">
+      <p class="clabel"><span contenteditable="true">Language Wise Bifurcation</span></p>
+      <div id="lang-rows"></div>
+      <button class="add-btn no-print" onclick="addLangRow()">+ Add language</button>
+      <div class="comment-wrap">
+        <div class="comment-hdr">💬 Comments</div>
+        <textarea class="comment-body" id="comment-lang" placeholder="Add a comment…"></textarea>
+      </div>
     </div>
   </div>
+
+  <!-- MESSAGING -->
+  <div class="mb">
+    <div class="card">
+      <p class="clabel"><span contenteditable="true">Messaging Breakdown</span></p>
+      <div style="position:relative;width:100%;height:230px"><canvas id="msgChart"></canvas></div>
+      <div class="sec-div">
+        <p class="clabel"><span contenteditable="true">Messaging Themes</span></p>
+        <div class="tags" id="msg-tags"></div>
+        <button class="add-btn no-print" onclick="addMsgRow()" style="margin-top:8px">+ Add theme</button>
+      </div>
+      <div class="comment-wrap">
+        <div class="comment-hdr">💬 Comments</div>
+        <textarea class="comment-body" id="comment-msg" placeholder="Add a comment…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <footer class="report-footer">
+    <span class="footer-note"><span contenteditable="true" id="footer-note">Ads Report · March Week 3 · Internal + External Team</span></span>
+    <button class="nav-btn accent no-print" onclick="exportPDF()" style="font-size:11px;padding:9px 18px;border-radius:8px">&#8595; Export PDF</button>
+  </footer>
+</div>
 </div>
 
-<!-- ROW 4: MESSAGING CHART + THEMES -->
-<div class="mb">
-  <div class="card">
-    <p class="clabel"><span contenteditable="true">Messaging Breakdown</span></p>
-    <div style="position:relative;width:100%;height:230px">
-      <canvas id="msgChart"></canvas>
+<!-- ══════════════ MONTHLY VIEW ══════════════ -->
+<div id="monthly-view" style="display:none">
+<div class="page-wrap">
+  <div class="monthly-page-header">
+    <div>
+      <p style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px;font-weight:500">Monthly Summary</p>
+      <div class="mth-title" id="mth-title">March <span>2026</span></div>
     </div>
-    <div class="sec-div">
-      <p class="clabel"><span contenteditable="true">Messaging Themes</span></p>
-      <div class="tags" id="msg-tags"></div>
-      <button class="add-btn no-print" onclick="addMsgRow()" style="margin-top:8px">+ Add theme</button>
-    </div>
-    <div class="comment-wrap">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for this section…"></textarea>
+    <div class="mth-total-box">
+      <div class="mth-total-num" id="mth-total">0</div>
+      <div class="mth-total-lbl">Total Ads Delivered</div>
     </div>
   </div>
-</div>
 
-<!-- FOOTER -->
-<footer class="footer">
-  <span class="footer-note"><span contenteditable="true">Ads Report · March Week 3 · Internal + External Team</span></span>
-  <button class="print-btn no-print" onclick="window.print()">Export PDF</button>
-</footer>
+  <!-- week summary cards -->
+  <div class="week-summary-row" id="mth-week-cards"></div>
+
+  <!-- week comparison chart -->
+  <div class="card mb">
+    <p class="monthly-section-title">Week-by-Week Comparison</p>
+    <div style="position:relative;height:240px"><canvas id="mth-compare-chart"></canvas></div>
+  </div>
+
+  <!-- aggregated breakdowns -->
+  <div class="g2 mb">
+    <div class="card">
+      <p class="monthly-section-title">Total by Category</p>
+      <div id="mth-cat-rows"></div>
+    </div>
+    <div class="card">
+      <p class="monthly-section-title">Pipeline Totals</p>
+      <div id="mth-pipe-rows" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <div class="g3 mb">
+    <div class="card">
+      <p class="monthly-section-title">Geo Distribution</p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="position:relative;width:130px;height:130px">
+          <canvas id="mth-geo-chart" width="130" height="130"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span id="mth-geo-center" style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;line-height:1">0</span>
+            <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">total</span>
+          </div>
+        </div>
+        <div id="mth-geo-legend" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="monthly-section-title">Grades Distribution</p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="position:relative;width:130px;height:130px">
+          <canvas id="mth-grade-chart" width="130" height="130"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span id="mth-grade-center" style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;line-height:1">0</span>
+            <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">total</span>
+          </div>
+        </div>
+        <div id="mth-grade-legend" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="monthly-section-title">Subject Split</p>
+      <div id="mth-subj-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:.5px solid var(--border)">
+        <p class="monthly-section-title" style="font-size:14px;margin-bottom:10px">Team Split</p>
+        <div id="mth-team-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb">
+    <p class="monthly-section-title">Messaging Themes — Total</p>
+    <div style="position:relative;height:240px"><canvas id="mth-msg-chart"></canvas></div>
+  </div>
+
+</div>
 </div>
 
 <!-- COLOR PICKER -->
@@ -322,357 +430,631 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;pad
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-/* ═══════════════════════════════════
-   PALETTE & DATA
-═══════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════ */
 const PAL=['#E85D26','#3B7DD8','#2BA87E','#9063CD','#E6A020','#E24B4A','#1A9EAF','#C0549E','#1A1A1A','#6B7280'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const LS_KEY='ads_report_v2';
 
-const D = {
-  metrics:[
-    {num:17, label:'Maths Ads',      sub:'68% of output',   color:'#E85D26'},
-    {num:8,  label:'English Ads',    sub:'32% of output',   color:'#3B7DD8'},
-    {num:20, label:'Internal Team',  sub:'5 external',      color:'#2BA87E'},
-    {num:5,  label:'External Team',   sub:'5 of 25 ads',     color:'#9063CD'},
-  ],
-  categories:[
-    {name:'Shoot',                    val:16, color:'#E85D26'},
-    {name:'Testimonial',              val:7,  color:'#3B7DD8'},
-    {name:'Revamp',                   val:2,  color:'#2BA87E'},
-    {name:'AI Video',                 val:0,  color:'#9063CD'},
-    {name:'Influencer Campaign',      val:0,  color:'#E6A020'},
-    {name:'Influencer Partnership',   val:0,  color:'#E24B4A'},
-    {name:'Influencer UGC',           val:0,  color:'#1A9EAF'},
-    {name:'Motion Graphics',          val:0,  color:'#6B7280'},
-  ],
-  pipeline:[
-    {name:'Delivered',       val:25, color:'#2BA87E'},
-    {name:'Post Production', val:13, color:'#3B7DD8'},
-    {name:'Scripting Stage', val:10, color:'#E6A020'},
-    {name:'Shooting Stage',  val:7,  color:'#E85D26'},
-    {name:'Dropped',         val:0,  color:'#E24B4A'},
-    {name:'Ideation Stage',  val:0,  color:'#9063CD'},
-    {name:'Not Picked',      val:0,  color:'#6B7280'},
-    {name:'On Hold',         val:0,  color:'#6B7280'},
-  ],
-  subjects:[
-    {name:'Maths',   val:17, color:'#E85D26'},
-    {name:'English', val:8,  color:'#3B7DD8'},
-    {name:'BLC',     val:0,  color:'#2BA87E'},
-  ],
-  team:[
-    {name:'Internal', val:20, color:'#2BA87E'},
-    {name:'External', val:5,  color:'#E6A020'},
-  ],
-  geo:[
-    {name:'UK',      val:8, color:'#3B7DD8'},
-    {name:'Generic', val:8, color:'#2BA87E'},
-    {name:'US',      val:9, color:'#E85D26'},
-  ],
-  grades:[
-    {name:'Grade 6–8', val:2,  color:'#3B7DD8'},
-    {name:'Grade 2–5', val:4,  color:'#E85D26'},
-    {name:'Grade 2–8', val:6,  color:'#9063CD'},
-    {name:'Generic',   val:13, color:'#2BA87E'},
-  ],
-  lang:[
-    {name:'English', val:25, color:'#3B7DD8'},
-  ],
-  messages:[
-    {name:'Fast Calculation',      val:5},
-    {name:'Speak With Confidence', val:3},
-    {name:'Class Experience',      val:1},
-    {name:'Sharpen Math Thinking', val:1},
-    {name:'Beyond School Methods', val:1},
-    {name:'Sharp Mind Advantage',  val:1},
-    {name:'Ted-Ed',                val:1},
-    {name:'Real Math Confidence',  val:1},
-    {name:'Competition Based',     val:1},
-  ],
+/* ═══════════════════════════════════════════
+   DEFAULT DATA
+═══════════════════════════════════════════ */
+function emptyWeek(){
+  return{
+    totalAds:0, hdrTag:'Weekly Performance Report', hdrWeek:'Week', hdrTotalLbl:'Ads Delivered', footerNote:'Ads Report',
+    metrics:[
+      {num:0,label:'Maths Ads',sub:'',color:'#E85D26'},
+      {num:0,label:'English Ads',sub:'',color:'#3B7DD8'},
+      {num:0,label:'Internal Team',sub:'',color:'#2BA87E'},
+      {num:0,label:'External Team',sub:'',color:'#9063CD'},
+    ],
+    categories:[{name:'Shoot',val:0,color:'#E85D26'}],
+    pipeline:[{name:'Post Production',val:0,color:'#2BA87E'},{name:'Scripting Stage',val:0,color:'#3B7DD8'},{name:'Shooting Stage',val:0,color:'#E85D26'}],
+    subjects:[{name:'Maths',val:0,color:'#E85D26'},{name:'English',val:0,color:'#3B7DD8'}],
+    team:[{name:'Internal',val:0,color:'#2BA87E'},{name:'External',val:0,color:'#E6A020'}],
+    geo:[{name:'Generic',val:0,color:'#2BA87E'}],
+    grades:[{name:'Generic',val:0,color:'#2BA87E'}],
+    lang:[{name:'English',val:0,color:'#3B7DD8'}],
+    messages:[{name:'New Theme',val:0}],
+    comments:{cat:'',pipe:'',geo:'',grade:'',lang:'',msg:'',metrics:''}
+  };
+}
+
+/* pre-filled week 2 */
+function week2Data(){
+  return{
+    totalAds:23, hdrTag:'Weekly Performance Report', hdrWeek:'Week 2', hdrTotalLbl:'Ads Delivered', footerNote:'Ads Report · March Week 2 · Internal Team Only',
+    metrics:[
+      {num:20,label:'Maths Ads',sub:'87% of output',color:'#E85D26'},
+      {num:3,label:'English Ads',sub:'13% of output',color:'#3B7DD8'},
+      {num:23,label:'Internal Team',sub:'0 external',color:'#2BA87E'},
+      {num:0,label:'External Team',sub:'0 of 23 ads',color:'#9063CD'},
+    ],
+    categories:[
+      {name:'Shoot',val:9,color:'#E85D26'},{name:'Influencer Campaign',val:6,color:'#3B7DD8'},
+      {name:'Testimonial',val:5,color:'#2BA87E'},{name:'Influencer UGC',val:2,color:'#9063CD'},
+      {name:'Revamp',val:1,color:'#E6A020'},{name:'Motion / AI',val:0,color:'#6B7280'},
+    ],
+    pipeline:[
+      {name:'Post Production',val:14,color:'#2BA87E'},{name:'Scripting Stage',val:10,color:'#3B7DD8'},
+      {name:'Shooting Stage',val:7,color:'#E85D26'},{name:'Dropped',val:1,color:'#E24B4A'},
+      {name:'Ideation/Hold',val:0,color:'#6B7280'},
+    ],
+    subjects:[{name:'Maths',val:20,color:'#E85D26'},{name:'English',val:3,color:'#3B7DD8'},{name:'BLC',val:0,color:'#2BA87E'}],
+    team:[{name:'Internal',val:23,color:'#2BA87E'},{name:'External',val:0,color:'#E6A020'}],
+    geo:[{name:'Generic',val:10,color:'#1A1A1A'},{name:'US',val:8,color:'#3B7DD8'},{name:'ANZ',val:2,color:'#2BA87E'},{name:'Generic+US',val:2,color:'#9063CD'},{name:'IN+GCC',val:1,color:'#E85D26'}],
+    grades:[{name:'Generic',val:23,color:'#2BA87E'}],
+    lang:[{name:'English',val:23,color:'#3B7DD8'}],
+    messages:[{name:'Fast Calculation',val:5},{name:'Cognitive Dev',val:2},{name:'Academic Math',val:2},{name:'Common Core',val:1},{name:'Tech-Career',val:1},{name:'Words→Stories',val:1},{name:'TwoGradesAhead',val:1},{name:'Achievements',val:1},{name:'She Loves Class',val:1},{name:'Confidence',val:1}],
+    comments:{cat:'',pipe:'',geo:'',grade:'',lang:'',msg:'',metrics:''}
+  };
+}
+
+/* pre-filled week 3 */
+function week3Data(){
+  return{
+    totalAds:25, hdrTag:'Weekly Performance Report', hdrWeek:'Week 3', hdrTotalLbl:'Ads Delivered', footerNote:'Ads Report · March Week 3 · Internal + External Team',
+    metrics:[
+      {num:17,label:'Maths Ads',sub:'68% of output',color:'#E85D26'},
+      {num:8,label:'English Ads',sub:'32% of output',color:'#3B7DD8'},
+      {num:20,label:'Internal Team',sub:'5 external',color:'#2BA87E'},
+      {num:5,label:'External Team',sub:'5 of 25 ads',color:'#9063CD'},
+    ],
+    categories:[
+      {name:'Shoot',val:16,color:'#E85D26'},{name:'Testimonial',val:7,color:'#3B7DD8'},
+      {name:'Revamp',val:2,color:'#2BA87E'},{name:'AI Video',val:0,color:'#9063CD'},
+      {name:'Influencer Campaign',val:0,color:'#E6A020'},{name:'Influencer Partnership',val:0,color:'#E24B4A'},
+      {name:'Influencer UGC',val:0,color:'#1A9EAF'},{name:'Motion Graphics',val:0,color:'#6B7280'},
+    ],
+    pipeline:[
+      {name:'Delivered',val:25,color:'#2BA87E'},{name:'Post Production',val:13,color:'#3B7DD8'},
+      {name:'Scripting Stage',val:10,color:'#E6A020'},{name:'Shooting Stage',val:7,color:'#E85D26'},
+      {name:'Dropped',val:0,color:'#E24B4A'},{name:'Ideation Stage',val:0,color:'#9063CD'},
+      {name:'Not Picked',val:0,color:'#6B7280'},{name:'On Hold',val:0,color:'#6B7280'},
+    ],
+    subjects:[{name:'Maths',val:17,color:'#E85D26'},{name:'English',val:8,color:'#3B7DD8'},{name:'BLC',val:0,color:'#2BA87E'}],
+    team:[{name:'Internal',val:20,color:'#2BA87E'},{name:'External',val:5,color:'#E6A020'}],
+    geo:[{name:'UK',val:8,color:'#3B7DD8'},{name:'Generic',val:8,color:'#2BA87E'},{name:'US',val:9,color:'#E85D26'}],
+    grades:[{name:'Grade 6–8',val:2,color:'#3B7DD8'},{name:'Grade 2–5',val:4,color:'#E85D26'},{name:'Grade 2–8',val:6,color:'#9063CD'},{name:'Generic',val:13,color:'#2BA87E'}],
+    lang:[{name:'English',val:25,color:'#3B7DD8'}],
+    messages:[{name:'Fast Calculation',val:5},{name:'Speak With Confidence',val:3},{name:'Class Experience',val:1},{name:'Sharpen Math Thinking',val:1},{name:'Beyond School Methods',val:1},{name:'Sharp Mind Advantage',val:1},{name:'Ted-Ed',val:1},{name:'Real Math Confidence',val:1},{name:'Competition Based',val:1}],
+    comments:{cat:'',pipe:'',geo:'',grade:'',lang:'',msg:'',metrics:''}
+  };
+}
+
+/* ═══════════════════════════════════════════
+   APP STATE
+═══════════════════════════════════════════ */
+let APP = {
+  months:{
+    '2026-03':{
+      label:'March 2026', year:2026, month:2,
+      weeks:{1:emptyWeek(),2:week2Data(),3:week3Data(),4:emptyWeek()}
+    }
+  },
+  currentMonthKey:'2026-03',
+  currentWeek:3,
+  currentView:'week' // 'week' | 'monthly'
 };
 
-let geoChart, gradeChart, msgChart;
+/* load from localStorage */
+function loadState(){
+  try{
+    const s=localStorage.getItem(LS_KEY);
+    if(s) APP=JSON.parse(s);
+  }catch(e){}
+}
+function saveState(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(APP));}catch(e){}
+}
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
 const sum=a=>a.reduce((s,r)=>s+(+r.val||0),0);
 const maxV=a=>Math.max(...a.map(r=>+r.val||0),1);
-const pct=(v,a)=>{ const s=sum(a); return s?Math.round(v/s*100):0; };
+const pct=(v,a)=>{const s=sum(a);return s?Math.round(v/s*100):0;};
 const autoC=a=>PAL[a.length%PAL.length];
 const msgC=i=>PAL[i%PAL.length];
+const D=()=>APP.months[APP.currentMonthKey].weeks[APP.currentWeek];
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.contentEditable==='true'){e.preventDefault();e.target.blur();}
 });
 
-/* ── COLOR PICKER ── */
+/* ─── COLOR PICKER ─── */
 let _cpCb=null;
 function openCP(anchor,cur,cb){
   _cpCb=cb;
   const p=$('colorPopup');
   p.innerHTML=PAL.map(c=>`<div class="cp-dot${c===cur?' active':''}" style="background:${c}" onclick="pickC('${c}')"></div>`).join('');
   const r=anchor.getBoundingClientRect();
-  p.style.left=r.left+'px';
-  p.style.top=(r.bottom+6)+'px';
+  p.style.left=r.left+'px';p.style.top=(r.bottom+6)+'px';
   p.classList.remove('hidden');
 }
 function pickC(c){if(_cpCb)_cpCb(c);$('colorPopup').classList.add('hidden');}
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.color-popup')&&!e.target.closest('.swatch'))$('colorPopup').classList.add('hidden');
-});
+document.addEventListener('click',e=>{if(!e.target.closest('.color-popup')&&!e.target.closest('.swatch'))$('colorPopup').classList.add('hidden');});
 
-/* ── DELETE HELPER ── */
-function del(arr,i,fn){if(arr.length<=1){alert('Need at least 1 row.');return;}arr.splice(i,1);fn();syncTotal();}
+/* ─── delete ─── */
+function delRow(arr,i,fn){if(arr.length<=1){alert('Need at least 1 row.');return;}arr.splice(i,1);fn();saveState();}
 
-/* ── SYNC TOTAL ── */
-function syncTotal(){/* manual — user edits header directly */}
+/* ─── save textarea comments ─── */
+function saveComments(){
+  const d=D();
+  d.comments=d.comments||{};
+  ['cat','pipe','geo','grade','lang','msg','metrics'].forEach(k=>{
+    const el=$(`comment-${k}`);if(el)d.comments[k]=el.value;
+  });
+}
 
-/* ════════════════════
-   METRICS
-════════════════════ */
+/* ─── save header text ─── */
+function saveHeaderText(){
+  const d=D();
+  d.hdrTag=$('hdr-tag')?.textContent||d.hdrTag;
+  d.hdrMonth=$('hdr-month')?.textContent;
+  d.hdrWeek=$('hdr-week')?.textContent||d.hdrWeek;
+  d.totalAds=parseInt($('hdr-total')?.textContent)||d.totalAds;
+  d.hdrTotalLbl=$('hdr-total-lbl')?.textContent||d.hdrTotalLbl;
+  d.footerNote=$('footer-note')?.textContent||d.footerNote;
+}
+
+/* ─── auto save on blur ─── */
+document.addEventListener('blur',e=>{
+  if(e.target.contentEditable==='true'||e.target.tagName==='TEXTAREA'){
+    saveComments();saveHeaderText();saveState();updateTabStatus();
+  }
+},true);
+
+/* ═══════════════════════════════════════════
+   CHART INSTANCES
+═══════════════════════════════════════════ */
+let charts={geo:null,grade:null,msg:null,mthCompare:null,mthGeo:null,mthGrade:null,mthMsg:null};
+function destroyChart(k){if(charts[k]){charts[k].destroy();charts[k]=null;}}
+function destroyAllWeekCharts(){['geo','grade','msg'].forEach(destroyChart);}
+
+/* ═══════════════════════════════════════════
+   RENDER WEEKLY
+═══════════════════════════════════════════ */
+function renderWeek(){
+  destroyAllWeekCharts();
+  const d=D();
+  const mk=APP.currentMonthKey;
+  const mData=APP.months[mk];
+
+  /* header */
+  $('hdr-tag').textContent=d.hdrTag||'Weekly Performance Report';
+  $('hdr-month').textContent=mData.label.split(' ')[0];
+  $('hdr-week').textContent=d.hdrWeek||`Week ${APP.currentWeek}`;
+  $('hdr-total').textContent=d.totalAds||0;
+  $('hdr-total-lbl').textContent=d.hdrTotalLbl||'Ads Delivered';
+  $('footer-note').textContent=d.footerNote||'Ads Report';
+
+  /* comments */
+  const c=d.comments||{};
+  ['cat','pipe','geo','grade','lang','msg','metrics'].forEach(k=>{
+    const el=$(`comment-${k}`);if(el)el.value=c[k]||'';
+  });
+
+  renderMetrics();
+  renderCatRows();
+  renderPipeline();
+  renderSubjects();
+  renderTeam();
+  renderGeoLeg(); buildGeoChart();
+  renderGradeLeg(); buildGradeChart();
+  renderLang();
+  buildMsgChart(); renderMsgTags();
+}
+
+/* ─── METRICS ─── */
 function renderMetrics(){
-  $('metrics-grid').innerHTML=D.metrics.map((m,i)=>`
+  const d=D();
+  $('metrics-grid').innerHTML=d.metrics.map((m,i)=>`
     <div class="metric" style="--mc:${m.color}">
       <div class="metric-num" contenteditable="true"
-        onblur="D.metrics[${i}].num=parseInt(this.textContent)||0">${m.num}</div>
+        onblur="D().metrics[${i}].num=parseInt(this.textContent)||0;saveState()">${m.num}</div>
       <div class="metric-label"><span contenteditable="true"
-        onblur="D.metrics[${i}].label=this.textContent">${m.label}</span></div>
+        onblur="D().metrics[${i}].label=this.textContent;saveState()">${m.label}</span></div>
       <div class="metric-sub"><span contenteditable="true"
-        onblur="D.metrics[${i}].sub=this.textContent">${m.sub}</span></div>
+        onblur="D().metrics[${i}].sub=this.textContent;saveState()">${m.sub}</span></div>
       <button class="del-btn no-print" style="position:absolute;top:8px;right:8px"
-        onclick="del(D.metrics,${i},renderMetrics)">×</button>
+        onclick="delRow(D().metrics,${i},renderMetrics)">×</button>
     </div>`).join('')
-  +`<button class="add-btn no-print" onclick="addMetric()" style="min-height:82px">+ Add metric</button>`
-  +`<div class="comment-wrap" style="margin-top:14px">
-      <div class="comment-header"><span class="comment-icon">💬</span><span class="comment-label">Comments</span></div>
-      <textarea class="comment-body" placeholder="Add a comment for the metrics…"></textarea>
-    </div>`;
+  +`<button class="add-btn no-print" onclick="addMetric()" style="min-height:80px">+ Add metric</button>
+     <div class="comment-wrap" style="margin-top:14px">
+       <div class="comment-hdr">💬 Comments</div>
+       <textarea class="comment-body" id="comment-metrics" placeholder="Add a comment…">${(D().comments||{}).metrics||''}</textarea>
+     </div>`;
 }
-function addMetric(){D.metrics.push({num:0,label:'New Metric',sub:'',color:autoC(D.metrics)});renderMetrics();}
+function addMetric(){D().metrics.push({num:0,label:'New Metric',sub:'',color:autoC(D().metrics)});renderMetrics();saveState();}
 
-/* ════════════════════
-   CATEGORY BARS
-════════════════════ */
+/* ─── CATEGORY BARS ─── */
 function renderCatRows(){
-  $('cat-rows').innerHTML=D.categories.map((r,i)=>`
+  const d=D();
+  $('cat-rows').innerHTML=d.categories.map((r,i)=>`
     <div class="bar-row">
       <span class="bar-name" contenteditable="true"
-        onblur="D.categories[${i}].name=this.textContent">${r.name}</span>
-      <div class="bar-track">
-        <div class="bar-fill" id="cf${i}" style="width:${pct(r.val,D.categories)}%;background:${r.color}"></div>
-      </div>
+        onblur="D().categories[${i}].name=this.textContent;saveState()">${r.name}</span>
+      <div class="bar-track"><div class="bar-fill" id="cf${i}" style="width:${pct(r.val,d.categories)}%;background:${r.color}"></div></div>
       <span class="bar-val" contenteditable="true" style="color:${r.color}"
-        onblur="D.categories[${i}].val=parseInt(this.textContent)||0;refreshCat();syncTotal()">${r.val}</span>
+        onblur="D().categories[${i}].val=parseInt(this.textContent)||0;refreshCat();saveState()">${r.val}</span>
       <div style="display:flex;align-items:center;gap:3px">
         <div class="swatch no-print" style="background:${r.color}"
-          onclick="openCP(this,'${r.color}',c=>{D.categories[${i}].color=c;renderCatRows();})"></div>
-        <button class="del-btn no-print"
-          onclick="del(D.categories,${i},()=>{renderCatRows();syncTotal()})">×</button>
+          onclick="openCP(this,'${r.color}',c=>{D().categories[${i}].color=c;renderCatRows();saveState();})"></div>
+        <button class="del-btn no-print" onclick="delRow(D().categories,${i},renderCatRows)">×</button>
       </div>
     </div>`).join('');
 }
-function refreshCat(){D.categories.forEach((r,i)=>{const f=$(`cf${i}`);if(f)f.style.width=pct(r.val,D.categories)+'%';});}
-function addCatRow(){D.categories.push({name:'New Type',val:0,color:autoC(D.categories)});renderCatRows();syncTotal();}
+function refreshCat(){D().categories.forEach((r,i)=>{const f=$(`cf${i}`);if(f)f.style.width=pct(r.val,D().categories)+'%';});}
+function addCatRow(){D().categories.push({name:'New Type',val:0,color:autoC(D().categories)});renderCatRows();saveState();}
 
-/* ════════════════════
-   PIPELINE
-════════════════════ */
+/* ─── PIPELINE ─── */
 function renderPipeline(){
-  const mx=maxV(D.pipeline);
-  $('pipe-rows').innerHTML=D.pipeline.map((r,i)=>`
+  const d=D();const mx=maxV(d.pipeline);
+  $('pipe-rows').innerHTML=d.pipeline.map((r,i)=>`
     <div class="pipe-row">
       <div class="pipe-dot" style="background:${r.color}"></div>
       <span class="pipe-name" contenteditable="true"
-        onblur="D.pipeline[${i}].name=this.textContent">${r.name}</span>
-      <div class="pipe-track">
-        <div class="pipe-fill" id="pf${i}" style="width:${Math.round(r.val/mx*100)}%;background:${r.color}"></div>
-      </div>
+        onblur="D().pipeline[${i}].name=this.textContent;saveState()">${r.name}</span>
+      <div class="pipe-track"><div class="pipe-fill" id="pf${i}" style="width:${Math.round(r.val/mx*100)}%;background:${r.color}"></div></div>
       <span class="pipe-val" contenteditable="true" style="color:${r.color}"
-        onblur="D.pipeline[${i}].val=parseInt(this.textContent)||0;refreshPipe()">${r.val}</span>
+        onblur="D().pipeline[${i}].val=parseInt(this.textContent)||0;refreshPipe();saveState()">${r.val}</span>
       <div class="no-print" style="display:flex;gap:3px;align-items:center">
         <div class="swatch" style="background:${r.color}"
-          onclick="openCP(this,'${r.color}',c=>{D.pipeline[${i}].color=c;renderPipeline();})"></div>
-        <button class="del-btn" onclick="del(D.pipeline,${i},renderPipeline)">×</button>
+          onclick="openCP(this,'${r.color}',c=>{D().pipeline[${i}].color=c;renderPipeline();saveState();})"></div>
+        <button class="del-btn" onclick="delRow(D().pipeline,${i},renderPipeline)">×</button>
       </div>
     </div>`).join('');
 }
-function refreshPipe(){const mx=maxV(D.pipeline);D.pipeline.forEach((r,i)=>{const f=$(`pf${i}`);if(f)f.style.width=Math.round(r.val/mx*100)+'%';});}
-function addPipeRow(){D.pipeline.push({name:'New Stage',val:0,color:autoC(D.pipeline)});renderPipeline();}
+function refreshPipe(){const mx=maxV(D().pipeline);D().pipeline.forEach((r,i)=>{const f=$(`pf${i}`);if(f)f.style.width=Math.round(r.val/mx*100)+'%';});}
+function addPipeRow(){D().pipeline.push({name:'New Stage',val:0,color:autoC(D().pipeline)});renderPipeline();saveState();}
 
-/* ════════════════════
-   SUBJECTS
-════════════════════ */
+/* ─── SUBJECTS ─── */
 function renderSubjects(){
-  $('subj-bar').innerHTML=D.subjects.filter(s=>s.val>0).map(s=>`
-    <div class="subj-seg" style="flex:${s.val};background:${s.color}">${s.name} ${s.val}</div>`).join('');
-  $('subj-rows').innerHTML=D.subjects.map((s,i)=>`
-    <div style="display:flex;align-items:center;gap:6px;font-size:12px;background:var(--surface2);border-radius:8px;padding:5px 10px">
+  const d=D();
+  $('subj-bar').innerHTML=d.subjects.filter(s=>s.val>0).map(s=>`<div class="seg" style="flex:${s.val};background:${s.color}">${s.name} ${s.val}</div>`).join('');
+  $('subj-rows').innerHTML=d.subjects.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;background:var(--s2);border-radius:8px;padding:5px 10px">
       <div class="swatch no-print" style="background:${s.color};width:10px;height:10px"
-        onclick="openCP(this,'${s.color}',c=>{D.subjects[${i}].color=c;renderSubjects();})"></div>
-      <span contenteditable="true" style="font-weight:500"
-        onblur="D.subjects[${i}].name=this.textContent;renderSubjects()">${s.name}</span>
-      <span contenteditable="true" style="font-family:'Syne',sans-serif;font-weight:700;color:${s.color}"
-        onblur="D.subjects[${i}].val=parseInt(this.textContent)||0;renderSubjects()">${s.val}</span>
-      <button class="del-btn no-print" onclick="del(D.subjects,${i},renderSubjects)">×</button>
+        onclick="openCP(this,'${s.color}',c=>{D().subjects[${i}].color=c;renderSubjects();saveState();})"></div>
+      <span contenteditable="true" style="font-weight:500" onblur="D().subjects[${i}].name=this.textContent;renderSubjects();saveState()">${s.name}</span>
+      <span contenteditable="true" style="font-family:'Syne',sans-serif;font-weight:700;color:${s.color}" onblur="D().subjects[${i}].val=parseInt(this.textContent)||0;renderSubjects();saveState()">${s.val}</span>
+      <button class="del-btn no-print" onclick="delRow(D().subjects,${i},renderSubjects)">×</button>
     </div>`).join('');
 }
-function addSubjRow(){D.subjects.push({name:'New',val:0,color:autoC(D.subjects)});renderSubjects();}
+function addSubjRow(){D().subjects.push({name:'New',val:0,color:autoC(D().subjects)});renderSubjects();saveState();}
 
-/* ════════════════════
-   TEAM SPLIT
-════════════════════ */
+/* ─── TEAM ─── */
 function renderTeam(){
-  const total=sum(D.team)||1;
-  $('team-bar').innerHTML=D.team.filter(t=>t.val>0).map(t=>`
-    <div class="team-seg" style="flex:${t.val};background:${t.color}">${t.name} ${t.val}</div>`).join('');
-  $('team-rows').innerHTML=D.team.map((t,i)=>`
-    <div style="display:flex;align-items:center;gap:6px;font-size:12px;background:var(--surface2);border-radius:8px;padding:5px 10px">
+  const d=D();
+  $('team-bar').innerHTML=d.team.filter(t=>t.val>0).map(t=>`<div class="seg seg-sm" style="flex:${t.val};background:${t.color}">${t.name} ${t.val}</div>`).join('');
+  $('team-rows').innerHTML=d.team.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;background:var(--s2);border-radius:8px;padding:5px 10px">
       <div class="swatch no-print" style="background:${t.color};width:10px;height:10px"
-        onclick="openCP(this,'${t.color}',c=>{D.team[${i}].color=c;renderTeam();})"></div>
-      <span contenteditable="true" style="font-weight:500"
-        onblur="D.team[${i}].name=this.textContent;renderTeam()">${t.name}</span>
-      <span contenteditable="true" style="font-family:'Syne',sans-serif;font-weight:700;color:${t.color}"
-        onblur="D.team[${i}].val=parseInt(this.textContent)||0;renderTeam()">${t.val}</span>
-      <button class="del-btn no-print" onclick="del(D.team,${i},renderTeam)">×</button>
+        onclick="openCP(this,'${t.color}',c=>{D().team[${i}].color=c;renderTeam();saveState();})"></div>
+      <span contenteditable="true" style="font-weight:500" onblur="D().team[${i}].name=this.textContent;renderTeam();saveState()">${t.name}</span>
+      <span contenteditable="true" style="font-family:'Syne',sans-serif;font-weight:700;color:${t.color}" onblur="D().team[${i}].val=parseInt(this.textContent)||0;renderTeam();saveState()">${t.val}</span>
+      <button class="del-btn no-print" onclick="delRow(D().team,${i},renderTeam)">×</button>
     </div>`).join('');
 }
-function addTeamRow(){D.team.push({name:'New Team',val:0,color:autoC(D.team)});renderTeam();}
+function addTeamRow(){D().team.push({name:'New Team',val:0,color:autoC(D().team)});renderTeam();saveState();}
 
-/* ════════════════════
-   GEO DONUT
-════════════════════ */
+/* ─── GEO ─── */
 function renderGeoLeg(){
-  $('geo-legend').innerHTML=D.geo.map((r,i)=>`
+  const d=D();
+  $('geo-legend').innerHTML=d.geo.map((r,i)=>`
     <div class="leg">
       <div class="swatch no-print" style="background:${r.color};width:10px;height:10px"
-        onclick="openCP(this,'${r.color}',c=>{D.geo[${i}].color=c;rebuildGeo();})"></div>
+        onclick="openCP(this,'${r.color}',c=>{D().geo[${i}].color=c;rebuildGeo();})"></div>
       <div class="leg-dot" style="background:${r.color}"></div>
-      <span class="leg-name" contenteditable="true"
-        onblur="D.geo[${i}].name=this.textContent;rebuildGeo()">${r.name}</span>
-      <span class="leg-val" contenteditable="true"
-        onblur="D.geo[${i}].val=parseInt(this.textContent)||0;rebuildGeo()">${r.val}</span>
-      <button class="del-btn no-print" onclick="del(D.geo,${i},rebuildGeo)">×</button>
+      <span class="leg-name" contenteditable="true" onblur="D().geo[${i}].name=this.textContent;rebuildGeo()">${r.name}</span>
+      <span class="leg-val" contenteditable="true" onblur="D().geo[${i}].val=parseInt(this.textContent)||0;rebuildGeo()">${r.val}</span>
+      <button class="del-btn no-print" onclick="delRow(D().geo,${i},rebuildGeo)">×</button>
     </div>`).join('');
 }
 function rebuildGeo(){
-  $('geo-center').textContent=sum(D.geo);
-  renderGeoLeg();
-  if(geoChart){geoChart.data.labels=D.geo.map(r=>r.name);geoChart.data.datasets[0].data=D.geo.map(r=>r.val);geoChart.data.datasets[0].backgroundColor=D.geo.map(r=>r.color);geoChart.update();}
+  const d=D();$('geo-center').textContent=sum(d.geo);renderGeoLeg();
+  if(charts.geo){charts.geo.data.labels=d.geo.map(r=>r.name);charts.geo.data.datasets[0].data=d.geo.map(r=>r.val);charts.geo.data.datasets[0].backgroundColor=d.geo.map(r=>r.color);charts.geo.update();}
+  saveState();
 }
-function addGeoRow(){D.geo.push({name:'New Region',val:0,color:autoC(D.geo)});rebuildGeo();}
+function addGeoRow(){D().geo.push({name:'New Region',val:0,color:autoC(D().geo)});rebuildGeo();}
 function buildGeoChart(){
-  geoChart=new Chart($('geoChart'),{type:'doughnut',
-    data:{labels:D.geo.map(r=>r.name),datasets:[{data:D.geo.map(r=>r.val),backgroundColor:D.geo.map(r=>r.color),borderWidth:2,borderColor:'#fff',hoverBorderColor:'#fff'}]},
+  const d=D();$('geo-center').textContent=sum(d.geo);
+  charts.geo=new Chart($('geoChart'),{type:'doughnut',
+    data:{labels:d.geo.map(r=>r.name),datasets:[{data:d.geo.map(r=>r.val),backgroundColor:d.geo.map(r=>r.color),borderWidth:2,borderColor:'#fff',hoverBorderColor:'#fff'}]},
     options:{responsive:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}`}}}}
   });
 }
 
-/* ════════════════════
-   GRADES DONUT
-════════════════════ */
+/* ─── GRADES ─── */
 function renderGradeLeg(){
-  $('grade-legend').innerHTML=D.grades.map((r,i)=>`
+  const d=D();
+  $('grade-legend').innerHTML=d.grades.map((r,i)=>`
     <div class="leg">
       <div class="swatch no-print" style="background:${r.color};width:10px;height:10px"
-        onclick="openCP(this,'${r.color}',c=>{D.grades[${i}].color=c;rebuildGrade();})"></div>
+        onclick="openCP(this,'${r.color}',c=>{D().grades[${i}].color=c;rebuildGrade();})"></div>
       <div class="leg-dot" style="background:${r.color}"></div>
-      <span class="leg-name" contenteditable="true"
-        onblur="D.grades[${i}].name=this.textContent;rebuildGrade()">${r.name}</span>
-      <span class="leg-val" contenteditable="true"
-        onblur="D.grades[${i}].val=parseInt(this.textContent)||0;rebuildGrade()">${r.val}</span>
-      <button class="del-btn no-print" onclick="del(D.grades,${i},rebuildGrade)">×</button>
+      <span class="leg-name" contenteditable="true" onblur="D().grades[${i}].name=this.textContent;rebuildGrade()">${r.name}</span>
+      <span class="leg-val" contenteditable="true" onblur="D().grades[${i}].val=parseInt(this.textContent)||0;rebuildGrade()">${r.val}</span>
+      <button class="del-btn no-print" onclick="delRow(D().grades,${i},rebuildGrade)">×</button>
     </div>`).join('');
 }
 function rebuildGrade(){
-  $('grade-center').textContent=sum(D.grades);
-  renderGradeLeg();
-  if(gradeChart){gradeChart.data.labels=D.grades.map(r=>r.name);gradeChart.data.datasets[0].data=D.grades.map(r=>r.val);gradeChart.data.datasets[0].backgroundColor=D.grades.map(r=>r.color);gradeChart.update();}
+  const d=D();$('grade-center').textContent=sum(d.grades);renderGradeLeg();
+  if(charts.grade){charts.grade.data.labels=d.grades.map(r=>r.name);charts.grade.data.datasets[0].data=d.grades.map(r=>r.val);charts.grade.data.datasets[0].backgroundColor=d.grades.map(r=>r.color);charts.grade.update();}
+  saveState();
 }
-function addGradeRow(){D.grades.push({name:'New Grade',val:0,color:autoC(D.grades)});rebuildGrade();}
+function addGradeRow(){D().grades.push({name:'New Grade',val:0,color:autoC(D().grades)});rebuildGrade();}
 function buildGradeChart(){
-  gradeChart=new Chart($('gradeChart'),{type:'doughnut',
-    data:{labels:D.grades.map(r=>r.name),datasets:[{data:D.grades.map(r=>r.val),backgroundColor:D.grades.map(r=>r.color),borderWidth:2,borderColor:'#fff',hoverBorderColor:'#fff'}]},
+  const d=D();$('grade-center').textContent=sum(d.grades);
+  charts.grade=new Chart($('gradeChart'),{type:'doughnut',
+    data:{labels:d.grades.map(r=>r.name),datasets:[{data:d.grades.map(r=>r.val),backgroundColor:d.grades.map(r=>r.color),borderWidth:2,borderColor:'#fff',hoverBorderColor:'#fff'}]},
     options:{responsive:false,cutout:'0%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}`}}}}
   });
 }
 
-/* ════════════════════
-   LANGUAGE BARS
-════════════════════ */
+/* ─── LANGUAGE ─── */
 function renderLang(){
-  $('lang-rows').innerHTML=D.lang.map((r,i)=>`
+  const d=D();
+  $('lang-rows').innerHTML=d.lang.map((r,i)=>`
     <div class="bar-row">
-      <span class="bar-name" contenteditable="true"
-        onblur="D.lang[${i}].name=this.textContent">${r.name}</span>
-      <div class="bar-track">
-        <div class="bar-fill" id="lf${i}" style="width:${pct(r.val,D.lang)}%;background:${r.color}"></div>
-      </div>
-      <span class="bar-val" contenteditable="true" style="color:${r.color}"
-        onblur="D.lang[${i}].val=parseInt(this.textContent)||0;refreshLang()">${r.val}</span>
+      <span class="bar-name" contenteditable="true" onblur="D().lang[${i}].name=this.textContent;saveState()">${r.name}</span>
+      <div class="bar-track"><div class="bar-fill" id="lf${i}" style="width:${pct(r.val,d.lang)}%;background:${r.color}"></div></div>
+      <span class="bar-val" contenteditable="true" style="color:${r.color}" onblur="D().lang[${i}].val=parseInt(this.textContent)||0;refreshLang();saveState()">${r.val}</span>
       <div style="display:flex;gap:3px;align-items:center">
-        <div class="swatch no-print" style="background:${r.color}"
-          onclick="openCP(this,'${r.color}',c=>{D.lang[${i}].color=c;renderLang();})"></div>
-        <button class="del-btn no-print" onclick="del(D.lang,${i},renderLang)">×</button>
+        <div class="swatch no-print" style="background:${r.color}" onclick="openCP(this,'${r.color}',c=>{D().lang[${i}].color=c;renderLang();saveState();})"></div>
+        <button class="del-btn no-print" onclick="delRow(D().lang,${i},renderLang)">×</button>
       </div>
     </div>`).join('');
 }
-function refreshLang(){D.lang.forEach((r,i)=>{const f=$(`lf${i}`);if(f)f.style.width=pct(r.val,D.lang)+'%';});}
-function addLangRow(){D.lang.push({name:'New Language',val:0,color:autoC(D.lang)});renderLang();}
+function refreshLang(){D().lang.forEach((r,i)=>{const f=$(`lf${i}`);if(f)f.style.width=pct(r.val,D().lang)+'%';});}
+function addLangRow(){D().lang.push({name:'New Language',val:0,color:autoC(D().lang)});renderLang();saveState();}
 
-/* ════════════════════
-   MESSAGING
-════════════════════ */
+/* ─── MESSAGING ─── */
 function buildMsgChart(){
-  const h=Math.max(180,D.messages.length*26+40);
-  $('msgChart').parentElement.style.height=h+'px';
-  msgChart=new Chart($('msgChart'),{
-    type:'bar',
-    data:{labels:D.messages.map(r=>r.name),datasets:[{label:'Count',data:D.messages.map(r=>r.val),backgroundColor:D.messages.map((_,i)=>msgC(i)),borderRadius:4,borderSkipped:false}]},
-    options:{
-      indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      scales:{
-        x:{beginAtZero:true,max:Math.max(...D.messages.map(r=>r.val),1)+1,grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1,color:'#888580',font:{size:11}},border:{display:false}},
-        y:{grid:{display:false},ticks:{color:'#1A1A1A',font:{size:11,weight:'500'}},border:{display:false}}
-      },
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` Count: ${ctx.raw}`}}}
-    }
+  const d=D();
+  const h=Math.max(180,d.messages.length*26+40);$('msgChart').parentElement.style.height=h+'px';
+  charts.msg=new Chart($('msgChart'),{type:'bar',
+    data:{labels:d.messages.map(r=>r.name),datasets:[{label:'Count',data:d.messages.map(r=>r.val),backgroundColor:d.messages.map((_,i)=>msgC(i)),borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{beginAtZero:true,max:Math.max(...d.messages.map(r=>r.val),1)+1,grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1,color:'#888580',font:{size:11}},border:{display:false}},
+        y:{grid:{display:false},ticks:{color:'#1A1A1A',font:{size:11,weight:'500'}},border:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` Count: ${ctx.raw}`}}}}
   });
 }
 function rebuildMsg(){
-  if(msgChart){
-    msgChart.data.labels=D.messages.map(r=>r.name);
-    msgChart.data.datasets[0].data=D.messages.map(r=>r.val);
-    msgChart.data.datasets[0].backgroundColor=D.messages.map((_,i)=>msgC(i));
-    msgChart.options.scales.x.max=Math.max(...D.messages.map(r=>r.val),1)+1;
-    const h=Math.max(180,D.messages.length*26+40);
-    msgChart.canvas.parentElement.style.height=h+'px';
-    msgChart.update();
-  }
-  renderMsgTags();
+  const d=D();
+  if(charts.msg){charts.msg.data.labels=d.messages.map(r=>r.name);charts.msg.data.datasets[0].data=d.messages.map(r=>r.val);charts.msg.data.datasets[0].backgroundColor=d.messages.map((_,i)=>msgC(i));charts.msg.options.scales.x.max=Math.max(...d.messages.map(r=>r.val),1)+1;const h=Math.max(180,d.messages.length*26+40);charts.msg.canvas.parentElement.style.height=h+'px';charts.msg.update();}
+  renderMsgTags();saveState();
 }
 function renderMsgTags(){
-  $('msg-tags').innerHTML=D.messages.map((r,i)=>`
+  const d=D();
+  $('msg-tags').innerHTML=d.messages.map((r,i)=>`
     <div class="tag">
       <div class="tag-badge" style="background:${msgC(i)}" contenteditable="true"
-        onblur="D.messages[${i}].val=parseInt(this.textContent)||0;rebuildMsg()">${r.val}</div>
-      <span contenteditable="true"
-        onblur="D.messages[${i}].name=this.textContent;rebuildMsg()">${r.name}</span>
-      <button class="del-btn no-print"
-        onclick="del(D.messages,${i},rebuildMsg)" style="margin-left:2px">×</button>
+        onblur="D().messages[${i}].val=parseInt(this.textContent)||0;rebuildMsg()">${r.val}</div>
+      <span contenteditable="true" onblur="D().messages[${i}].name=this.textContent;rebuildMsg()">${r.name}</span>
+      <button class="del-btn no-print" onclick="delRow(D().messages,${i},rebuildMsg)" style="margin-left:2px">×</button>
     </div>`).join('');
 }
-function addMsgRow(){D.messages.push({name:'New Theme',val:1});rebuildMsg();}
+function addMsgRow(){D().messages.push({name:'New Theme',val:1});rebuildMsg();}
 
-/* ════════════════════
+/* ═══════════════════════════════════════════
+   WEEK SWITCHING
+═══════════════════════════════════════════ */
+function switchWeek(n){
+  saveComments();saveHeaderText();saveState();
+  APP.currentWeek=n;
+  APP.currentView='week';
+  $('weekly-view').style.display='';
+  $('monthly-view').style.display='none';
+  updateTabs();
+  renderWeek();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function switchToMonthly(){
+  saveComments();saveHeaderText();saveState();
+  APP.currentView='monthly';
+  $('weekly-view').style.display='none';
+  $('monthly-view').style.display='';
+  updateTabs();
+  renderMonthly();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateTabs(){
+  [1,2,3,4].forEach(n=>{
+    const t=$(`tab-w${n}`);
+    if(!t)return;
+    t.classList.toggle('active',APP.currentView==='week'&&APP.currentWeek===n);
+  });
+  $('tab-monthly').classList.toggle('active',APP.currentView==='monthly');
+  updateTabStatus();
+}
+
+function updateTabStatus(){
+  [1,2,3,4].forEach(n=>{
+    const t=$(`tab-w${n}`);if(!t)return;
+    const w=APP.months[APP.currentMonthKey]?.weeks[n];
+    const hasData=w&&(w.totalAds>0||sum(w.categories)>0);
+    // clear old status badges
+    const old=t.querySelector('.week-status');if(old)old.remove();
+    const badge=document.createElement('span');
+    badge.className='week-status '+(hasData?'ws-has-data':'ws-empty');
+    badge.textContent=hasData?'●':'○';
+    t.appendChild(badge);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   MONTHLY OVERVIEW
+═══════════════════════════════════════════ */
+function aggregateField(field){
+  const mData=APP.months[APP.currentMonthKey];
+  const merged=[];
+  [1,2,3,4].forEach(w=>{
+    const wk=mData.weeks[w];
+    (wk[field]||[]).forEach(r=>{
+      const ex=merged.find(m=>m.name===r.name);
+      if(ex) ex.val+=(+r.val||0);
+      else merged.push({...r,val:+r.val||0});
+    });
+  });
+  return merged;
+}
+
+function renderMonthly(){
+  ['mthCompare','mthGeo','mthGrade','mthMsg'].forEach(destroyChart);
+  const mData=APP.months[APP.currentMonthKey];
+  const lbl=mData.label;
+  const parts=lbl.split(' ');
+  $('mth-title').innerHTML=`${parts[0]} <span>${parts[1]||''}</span>`;
+
+  /* total */
+  const totals=[1,2,3,4].map(w=>(+mData.weeks[w].totalAds||0));
+  const grandTotal=totals.reduce((a,b)=>a+b,0);
+  $('mth-total').textContent=grandTotal;
+
+  /* week cards */
+  $('mth-week-cards').innerHTML=[1,2,3,4].map((w,i)=>`
+    <div class="wscard" style="border-top:3px solid ${PAL[i]}">
+      <div class="wscard-week">Week ${w}</div>
+      <div class="wscard-num" style="color:${PAL[i]}">${totals[i]}</div>
+      <div class="wscard-label">Ads Delivered</div>
+    </div>`).join('');
+
+  /* comparison chart */
+  const compareLabels=['Week 1','Week 2','Week 3','Week 4'];
+  charts.mthCompare=new Chart($('mth-compare-chart'),{
+    type:'bar',
+    data:{labels:compareLabels,datasets:[{label:'Ads Delivered',data:totals,backgroundColor:PAL.slice(0,4),borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw} ads`}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#1A1A1A',font:{size:12,weight:'500'}},border:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#888580',font:{size:11}},border:{display:false}}}}
+  });
+
+  /* aggregated category bars */
+  const cats=aggregateField('categories');
+  const catTotal=sum(cats)||1;
+  $('mth-cat-rows').innerHTML=cats.map(r=>`
+    <div class="bar-row" style="grid-template-columns:140px 1fr 36px">
+      <span class="bar-name">${r.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.val/catTotal*100)}%;background:${r.color}"></div></div>
+      <span class="bar-val" style="color:${r.color}">${r.val}</span>
+    </div>`).join('');
+
+  /* pipeline */
+  const pipes=aggregateField('pipeline');
+  const pipeMx=maxV(pipes);
+  $('mth-pipe-rows').innerHTML=pipes.map(r=>`
+    <div class="pipe-row">
+      <div class="pipe-dot" style="background:${r.color}"></div>
+      <span class="pipe-name">${r.name}</span>
+      <div class="pipe-track"><div class="pipe-fill" style="width:${Math.round(r.val/pipeMx*100)}%;background:${r.color}"></div></div>
+      <span class="pipe-val" style="color:${r.color}">${r.val}</span>
+    </div>`).join('');
+
+  /* geo donut */
+  const geos=aggregateField('geo');
+  $('mth-geo-center').textContent=sum(geos);
+  $('mth-geo-legend').innerHTML=geos.map(r=>`<div class="leg"><div class="leg-dot" style="background:${r.color}"></div><span class="leg-name">${r.name}</span><span class="leg-val">${r.val}</span></div>`).join('');
+  charts.mthGeo=new Chart($('mth-geo-chart'),{type:'doughnut',data:{labels:geos.map(r=>r.name),datasets:[{data:geos.map(r=>r.val),backgroundColor:geos.map(r=>r.color),borderWidth:2,borderColor:'#fff'}]},options:{responsive:false,cutout:'62%',plugins:{legend:{display:false}}}});
+
+  /* grades donut */
+  const grades=aggregateField('grades');
+  $('mth-grade-center').textContent=sum(grades);
+  $('mth-grade-legend').innerHTML=grades.map(r=>`<div class="leg"><div class="leg-dot" style="background:${r.color}"></div><span class="leg-name">${r.name}</span><span class="leg-val">${r.val}</span></div>`).join('');
+  charts.mthGrade=new Chart($('mth-grade-chart'),{type:'doughnut',data:{labels:grades.map(r=>r.name),datasets:[{data:grades.map(r=>r.val),backgroundColor:grades.map(r=>r.color),borderWidth:2,borderColor:'#fff'}]},options:{responsive:false,cutout:'0%',plugins:{legend:{display:false}}}});
+
+  /* subjects + team */
+  const subjs=aggregateField('subjects');const subjMx=maxV(subjs);
+  $('mth-subj-rows').innerHTML=subjs.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:5px 0">
+    <div class="leg-dot" style="background:${r.color}"></div>
+    <span style="flex:1;font-size:12px;font-weight:500">${r.name}</span>
+    <div class="bar-track" style="flex:2"><div class="bar-fill" style="width:${Math.round(r.val/subjMx*100)}%;background:${r.color}"></div></div>
+    <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:${r.color};min-width:28px;text-align:right">${r.val}</span>
+  </div>`).join('');
+  const teams=aggregateField('team');
+  $('mth-team-rows').innerHTML=teams.map(r=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px">
+    <div style="width:10px;height:10px;border-radius:50%;background:${r.color}"></div>
+    <span style="flex:1;font-weight:500">${r.name}</span>
+    <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:${r.color}">${r.val}</span>
+  </div>`).join('');
+
+  /* messaging chart */
+  const msgs=aggregateField('messages');
+  const mh=Math.max(200,msgs.length*26+40);
+  $('mth-msg-chart').parentElement.style.height=mh+'px';
+  charts.mthMsg=new Chart($('mth-msg-chart'),{type:'bar',
+    data:{labels:msgs.map(r=>r.name),datasets:[{label:'Count',data:msgs.map(r=>r.val),backgroundColor:msgs.map((_,i)=>msgC(i)),borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1,color:'#888580',font:{size:11}},border:{display:false}},y:{grid:{display:false},ticks:{color:'#1A1A1A',font:{size:11,weight:'500'}},border:{display:false}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` Count: ${ctx.raw}`}}}}
+  });
+}
+
+/* ═══════════════════════════════════════════
+   MONTH MANAGEMENT
+═══════════════════════════════════════════ */
+function shiftMonth(dir){
+  saveComments();saveHeaderText();saveState();
+  const keys=Object.keys(APP.months).sort();
+  const idx=keys.indexOf(APP.currentMonthKey);
+  const next=keys[idx+dir];
+  if(next){
+    APP.currentMonthKey=next;
+    APP.currentWeek=APP.currentView==='week'?APP.currentWeek:APP.currentWeek;
+    updateNav();
+    if(APP.currentView==='week') renderWeek();
+    else renderMonthly();
+    updateTabStatus();
+  } else {
+    alert(dir>0?'No future month yet. Add one with "+ New Month"':'Already at the earliest month.');
+  }
+}
+
+function addMonth(){
+  const existing=Object.keys(APP.months).sort();
+  const last=existing[existing.length-1];
+  const [y,m]=last.split('-').map(Number);
+  let ny=y,nm=m+1;if(nm>12){nm=1;ny++;}
+  const key=`${ny}-${String(nm).padStart(2,'0')}`;
+  if(APP.months[key]){APP.currentMonthKey=key;updateNav();updateTabStatus();return;}
+  const label=`${MONTHS[nm-1]} ${ny}`;
+  APP.months[key]={label,year:ny,month:nm-1,weeks:{1:emptyWeek(),2:emptyWeek(),3:emptyWeek(),4:emptyWeek()}};
+  APP.currentMonthKey=key;
+  APP.currentView='week';APP.currentWeek=1;
+  saveState();updateNav();
+  $('weekly-view').style.display='';$('monthly-view').style.display='none';
+  updateTabs();renderWeek();updateTabStatus();
+}
+
+function updateNav(){
+  const lbl=APP.months[APP.currentMonthKey]?.label||'';
+  $('nav-month-label').textContent=lbl;
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════════ */
+function exportPDF(){window.print();}
+
+/* ═══════════════════════════════════════════
    INIT
-════════════════════ */
-renderMetrics();
-renderCatRows();
-renderPipeline();
-renderSubjects();
-renderTeam();
-renderGeoLeg(); buildGeoChart();
-renderGradeLeg(); buildGradeChart();
-renderLang();
-buildMsgChart(); renderMsgTags();
-syncTotal();
+═══════════════════════════════════════════ */
+loadState();
+// ensure March 2026 week data exists (first load)
+if(!APP.months['2026-03']){
+  APP.months['2026-03']={label:'March 2026',year:2026,month:2,weeks:{1:emptyWeek(),2:week2Data(),3:week3Data(),4:emptyWeek()}};
+}
+if(!APP.months[APP.currentMonthKey]) APP.currentMonthKey=Object.keys(APP.months)[0];
+if(!APP.currentView) APP.currentView='week';
+if(!APP.currentWeek) APP.currentWeek=3;
+updateNav();updateTabs();
+if(APP.currentView==='monthly'){$('weekly-view').style.display='none';$('monthly-view').style.display='';renderMonthly();}
+else{$('monthly-view').style.display='none';renderWeek();}
 </script>
 </body>
 </html>

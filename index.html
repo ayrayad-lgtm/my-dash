@@ -167,7 +167,56 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-we
 /* ════════════════ SEC-DIV ════════════════ */
 .sec-div{margin-top:14px;padding-top:14px;border-top:.5px solid var(--border)}
 
-/* ════════════════ FOOTER ════════════════ */
+/* ════════════════ SAVE BAR ════════════════ */
+.save-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-top:28px;padding:20px 24px;
+  background:var(--surface);
+  border:.5px solid var(--border);
+  border-radius:var(--r);
+  flex-wrap:wrap;
+}
+.save-bar-left{display:flex;align-items:center;gap:14px;flex:1;min-width:200px}
+.save-indicator{display:flex;align-items:center;gap:8px}
+.save-dot{width:9px;height:9px;border-radius:50%;background:#d0ceca;flex-shrink:0;transition:background .3s}
+.save-dot.saved{background:#2BA87E}
+.save-dot.saving{background:#E6A020;animation:blink .7s ease-in-out infinite}
+.save-dot.error{background:#E24B4A}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.save-label{font-size:12px;font-weight:500;color:var(--muted)}
+.save-label.saved{color:#2BA87E}
+.save-label.error{color:#E24B4A}
+.save-code-wrap{display:flex;align-items:center;gap:6px;background:var(--s2);border:.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;font-family:monospace;color:var(--text);max-width:220px;overflow:hidden}
+.save-code-wrap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.copy-btn{background:none;border:none;font-size:11px;cursor:pointer;color:var(--a3);font-weight:600;flex-shrink:0;padding:0 2px}
+.copy-btn:hover{text-decoration:underline}
+.save-bar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sbtn{display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:10px 18px;border-radius:8px;border:none;cursor:pointer;transition:all .18s;white-space:nowrap}
+.sbtn:hover{transform:translateY(-1px)}
+.sbtn:active{transform:scale(.97)}
+.sbtn-save{background:#2BA87E;color:#fff;box-shadow:0 2px 8px rgba(43,168,126,.25)}
+.sbtn-save:hover{background:#249068}
+.sbtn-load{background:var(--a3);color:#fff;box-shadow:0 2px 8px rgba(59,125,216,.2)}
+.sbtn-load:hover{background:#2d6cbf}
+.sbtn-reset{background:var(--s2);color:var(--muted);border:.5px solid var(--border)}
+.sbtn-reset:hover{color:var(--danger);border-color:rgba(226,75,74,.4);background:rgba(226,75,74,.06);transform:translateY(-1px)}
+/* Toast */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1A1A1A;color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  padding:12px 22px;border-radius:10px;
+  box-shadow:0 6px 24px rgba(0,0,0,.22);
+  z-index:9999;opacity:0;
+  transition:opacity .25s,transform .25s;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#2BA87E}
+.toast.error{background:#E24B4A}
+.toast.warning{background:#E6A020}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .7s linear infinite}
 .report-footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:18px;border-top:.5px solid var(--border)}
 .footer-note{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 
@@ -342,7 +391,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-we
     <span class="footer-note"><span contenteditable="true" id="footer-note">Ads Report · March Week 3 · Internal + External Team</span></span>
     <button class="nav-btn accent no-print" onclick="exportPDF()" style="font-size:11px;padding:9px 18px;border-radius:8px">&#8595; Export PDF</button>
   </footer>
-</div>
+
+  <!-- SAVE BAR (weekly) -->
+  <div class="save-bar no-print">
+    <div class="save-bar-left">
+      <div class="save-indicator">
+        <span class="save-dot" id="sdot"></span>
+        <span class="save-label" id="slabel">Not saved — edits lost on refresh</span>
+      </div>
+      <div class="save-code-wrap" id="scode-wrap" style="display:none">
+        <span id="scode-text"></span>
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
+      </div>
+    </div>
+    <div class="save-bar-right">
+      <button class="sbtn sbtn-reset" onclick="resetData()">&#8635; Reset</button>
+      <button class="sbtn sbtn-load" onclick="loadFromCloud()" id="load-btn">&#8593; Load Saved</button>
+      <button class="sbtn sbtn-save" onclick="saveOnline()" id="save-btn">&#9729; Save Online</button>
+    </div>
+  </div>
+
+  </div>
 </div>
 
 <!-- ══════════════ MONTHLY VIEW ══════════════ -->
@@ -422,8 +491,30 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-we
     <div style="position:relative;height:240px"><canvas id="mth-msg-chart"></canvas></div>
   </div>
 
+  <!-- SAVE BAR (monthly) -->
+  <div class="save-bar no-print">
+    <div class="save-bar-left">
+      <div class="save-indicator">
+        <span class="save-dot" id="sdot2"></span>
+        <span class="save-label" id="slabel2">Not saved — edits lost on refresh</span>
+      </div>
+      <div class="save-code-wrap" id="scode-wrap2" style="display:none">
+        <span id="scode-text2"></span>
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
+      </div>
+    </div>
+    <div class="save-bar-right">
+      <button class="sbtn sbtn-reset" onclick="resetData()">&#8635; Reset</button>
+      <button class="sbtn sbtn-load" onclick="loadFromCloud()" id="load-btn2">&#8593; Load Saved</button>
+      <button class="sbtn sbtn-save" onclick="saveOnline()" id="save-btn2">&#9729; Save Online</button>
+    </div>
+  </div>
+
 </div>
 </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <!-- COLOR PICKER -->
 <div class="color-popup hidden" id="colorPopup"></div>
@@ -523,9 +614,74 @@ function week3Data(){
   };
 }
 
-/* ═══════════════════════════════════════════
-   APP STATE
-═══════════════════════════════════════════ */
+/* pre-filled week 4 */
+function week4Data(){
+  return{
+    totalAds:23, hdrTag:'Weekly Performance Report', hdrWeek:'Week 4', hdrTotalLbl:'Ads Delivered', footerNote:'Ads Report · March Week 4 · Internal Team',
+    metrics:[
+      {num:20,label:'Maths Ads',sub:'87% of output',color:'#E85D26'},
+      {num:3, label:'English Ads',sub:'13% of output',color:'#3B7DD8'},
+      {num:20,label:'Internal Team',sub:'',color:'#2BA87E'},
+      {num:0, label:'External Team',sub:'0 of 23 ads',color:'#9063CD'},
+    ],
+    categories:[
+      {name:'Shoot',               val:19, color:'#E85D26'},
+      {name:'Testimonial',         val:1,  color:'#3B7DD8'},
+      {name:'Influencer Campaign', val:4,  color:'#2BA87E'},
+      {name:'AI Video',            val:0,  color:'#9063CD'},
+    ],
+    pipeline:[
+      {name:'Delivered',            val:23, color:'#2BA87E'},
+      {name:'Post Production Stage',val:13, color:'#3B7DD8'},
+      {name:'Shooting Stage',       val:12, color:'#E85D26'},
+      {name:'External Dependency',  val:7,  color:'#9063CD'},
+      {name:'Scripting Stage',      val:7,  color:'#E6A020'},
+      {name:'On Hold',              val:1,  color:'#E24B4A'},
+    ],
+    subjects:[
+      {name:'Maths',   val:20, color:'#E85D26'},
+      {name:'English', val:3,  color:'#3B7DD8'},
+    ],
+    team:[
+      {name:'Internal', val:23, color:'#2BA87E'},
+      {name:'External', val:0,  color:'#E6A020'},
+    ],
+    geo:[
+      {name:'Generic', val:12, color:'#2BA87E'},
+      {name:'US',      val:8,  color:'#3B7DD8'},
+      {name:'UK',      val:3,  color:'#E6A020'},
+    ],
+    grades:[
+      {name:'Generic',    val:10, color:'#2BA87E'},
+      {name:'Grade 6–8',  val:1,  color:'#3B7DD8'},
+      {name:'Grade 2–3',  val:2,  color:'#E85D26'},
+      {name:'Grade 2–5',  val:9,  color:'#9063CD'},
+      {name:'Grade UKG–1',val:1,  color:'#E6A020'},
+    ],
+    lang:[
+      {name:'English',   val:14, color:'#3B7DD8'},
+      {name:'Hindi',     val:5,  color:'#E24B4A'},
+      {name:'Telugu',    val:1,  color:'#2BA87E'},
+      {name:'Malayalam', val:1,  color:'#9063CD'},
+      {name:'Tamil',     val:2,  color:'#E6A020'},
+    ],
+    messages:[
+      {name:'All In One Math Course',      val:3},
+      {name:'Real Math Confidence',        val:1},
+      {name:'Confidence With Compliance',  val:5},
+      {name:'Generic',                     val:4},
+      {name:'2 Grades Ahead',              val:1},
+      {name:'Pass On Math Sharpness',      val:1},
+      {name:'Old Process',                 val:2},
+      {name:'High Dosage',                 val:1},
+      {name:'USP Based',                   val:3},
+      {name:'From Silent To Confident',    val:1},
+      {name:'Future-Ready Communication',  val:1},
+      {name:'Respect Through English',     val:1},
+    ],
+    comments:{cat:'',pipe:'',geo:'',grade:'',lang:'',msg:'',metrics:''}
+  };
+}
 let APP = {
   months:{
     '2026-03':{
@@ -538,16 +694,171 @@ let APP = {
   currentView:'week' // 'week' | 'monthly'
 };
 
-/* load from localStorage */
-function loadState(){
+/* ═══════════════════════════════════════════
+   CLOUD STORAGE  (JSONBlob — free, CORS-enabled)
+   Blob ID stored in localStorage so the user
+   can Load their last save after a refresh.
+   Auto-save is intentionally OFF — edits are
+   only pushed when Save Online is clicked.
+═══════════════════════════════════════════ */
+const CLOUD_ID_KEY = 'ads_report_cloud_id';
+const API_BASE     = 'https://jsonblob.com/api/jsonBlob';
+
+/* ── TOAST ── */
+let _toastTimer;
+function toast(msg, type='', dur=3200){
+  const t=$('toast');
+  t.textContent=msg;
+  t.className='toast '+(type)+' show';
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ── STATUS ── */
+function setStatus(state, msg){
+  const cfg={
+    idle:   {dot:'',         label:'Not saved — edits lost on refresh', lc:''},
+    saving: {dot:'saving',   label:msg||'Saving to cloud…',             lc:''},
+    loading:{dot:'saving',   label:msg||'Loading from cloud…',          lc:''},
+    saved:  {dot:'saved',    label:msg||'Saved to cloud ✓',             lc:'saved'},
+    error:  {dot:'error',    label:msg||'Error — try again',            lc:'error'},
+  }[state]||{dot:'',label:msg||'',lc:''};
+
+  ['sdot','sdot2'].forEach(id=>{
+    const el=$(id);if(el){el.className='save-dot '+cfg.dot;}
+  });
+  ['slabel','slabel2'].forEach(id=>{
+    const el=$(id);if(el){el.textContent=cfg.label;el.className='save-label '+cfg.lc;}
+  });
+
+  const id=localStorage.getItem(CLOUD_ID_KEY)||'';
+  const show=!!id;
+  const shortId=id?id.slice(-10):'';
+  ['','2'].forEach(s=>{
+    const w=$('scode-wrap'+s);const t=$('scode-text'+s);
+    if(w) w.style.display=show?'flex':'none';
+    if(t) t.textContent=show?`ID: …${shortId}`:'';
+  });
+}
+
+/* ── COPY ID ── */
+function copyCode(){
+  const id=localStorage.getItem(CLOUD_ID_KEY)||'';
+  if(!id){toast('Nothing saved yet','warning');return;}
+  navigator.clipboard?.writeText(id).then(()=>toast('Save ID copied!','success')).catch(()=>{
+    prompt('Copy your Save ID:',id);
+  });
+}
+
+/* ── DISABLE / ENABLE BUTTONS ── */
+function setBusy(busy){
+  ['save-btn','save-btn2','load-btn','load-btn2'].forEach(id=>{
+    const el=$(id);
+    if(el){el.disabled=busy;el.style.opacity=busy?'.5':'1';el.style.cursor=busy?'wait':'pointer';}
+  });
+}
+
+/* ══════════════════════════════
+   SAVE ONLINE
+══════════════════════════════ */
+async function saveOnline(){
+  saveComments();saveHeaderText();
+  const payload=JSON.stringify(APP);
+  const existingId=localStorage.getItem(CLOUD_ID_KEY);
+
+  setStatus('saving');setBusy(true);
   try{
-    const s=localStorage.getItem(LS_KEY);
-    if(s) APP=JSON.parse(s);
-  }catch(e){}
+    let blobId;
+    if(existingId){
+      /* update existing */
+      const res=await fetch(`${API_BASE}/${existingId}`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:payload
+      });
+      if(!res.ok) throw new Error(`PUT ${res.status}`);
+      blobId=existingId;
+    } else {
+      /* create new */
+      const res=await fetch(API_BASE,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:payload
+      });
+      if(!res.ok) throw new Error(`POST ${res.status}`);
+      const loc=res.headers.get('Location')||'';
+      blobId=loc.split('/').pop();
+      if(!blobId) throw new Error('No blob ID returned');
+    }
+    localStorage.setItem(CLOUD_ID_KEY,blobId);
+    setStatus('saved','Saved to cloud ✓ — refresh will reload this save');
+    toast('✓ Saved online successfully!','success');
+  }catch(err){
+    console.error('Save error:',err);
+    setStatus('error','Save failed — check internet connection');
+    toast('✗ Save failed. Check your internet.','error');
+  }finally{setBusy(false);}
 }
-function saveState(){
-  try{localStorage.setItem(LS_KEY,JSON.stringify(APP));}catch(e){}
+
+/* ══════════════════════════════
+   LOAD FROM CLOUD
+══════════════════════════════ */
+async function loadFromCloud(){
+  const blobId=localStorage.getItem(CLOUD_ID_KEY);
+  if(!blobId){
+    toast('No save found. Click "Save Online" first.','warning');
+    return;
+  }
+  setStatus('loading');setBusy(true);
+  try{
+    const res=await fetch(`${API_BASE}/${blobId}`,{
+      headers:{'Accept':'application/json'}
+    });
+    if(!res.ok) throw new Error(`GET ${res.status}`);
+    const data=await res.json();
+    APP=data;
+    setStatus('saved','Loaded from cloud ✓');
+    toast('✓ Data loaded from cloud!','success');
+    updateNav();updateTabs();
+    if(APP.currentView==='monthly'){
+      $('weekly-view').style.display='none';
+      $('monthly-view').style.display='';
+      renderMonthly();
+    } else {
+      $('monthly-view').style.display='none';
+      $('weekly-view').style.display='';
+      renderWeek();
+    }
+  }catch(err){
+    console.error('Load error:',err);
+    setStatus('error','Load failed — save may have expired');
+    toast('✗ Could not load save. Try saving again.','error');
+  }finally{setBusy(false);}
 }
+
+/* ══════════════════════════════
+   RESET
+══════════════════════════════ */
+function resetData(){
+  if(!confirm('Reset ALL data to defaults?\n\nThis will also clear your cloud save ID.\nThis cannot be undone.')) return;
+  localStorage.removeItem(CLOUD_ID_KEY);
+  APP={
+    months:{'2026-03':{label:'March 2026',year:2026,month:2,weeks:{1:emptyWeek(),2:week2Data(),3:week3Data(),4:week4Data()}}},
+    currentMonthKey:'2026-03',currentWeek:3,currentView:'week'
+  };
+  setStatus('idle');
+  updateNav();updateTabs();
+  APP.currentView='week';APP.currentWeek=3;
+  $('weekly-view').style.display='';
+  $('monthly-view').style.display='none';
+  renderWeek();updateTabStatus();
+  toast('Data reset to defaults','');
+}
+
+/* ── stub — no auto-save ── */
+function loadState(){}
+function saveState(){}
+
 
 /* ═══════════════════════════════════════════
    HELPERS
@@ -1042,19 +1353,34 @@ function updateNav(){
 function exportPDF(){window.print();}
 
 /* ═══════════════════════════════════════════
-   INIT
+   INIT — no auto-load; user clicks Load Saved
 ═══════════════════════════════════════════ */
-loadState();
-// ensure March 2026 week data exists (first load)
-if(!APP.months['2026-03']){
-  APP.months['2026-03']={label:'March 2026',year:2026,month:2,weeks:{1:emptyWeek(),2:week2Data(),3:week3Data(),4:emptyWeek()}};
-}
-if(!APP.months[APP.currentMonthKey]) APP.currentMonthKey=Object.keys(APP.months)[0];
-if(!APP.currentView) APP.currentView='week';
-if(!APP.currentWeek) APP.currentWeek=3;
-updateNav();updateTabs();
-if(APP.currentView==='monthly'){$('weekly-view').style.display='none';$('monthly-view').style.display='';renderMonthly();}
-else{$('monthly-view').style.display='none';renderWeek();}
+(function init(){
+  // ensure March 2026 exists with all week data
+  if(!APP.months['2026-03']){
+    APP.months['2026-03']={label:'March 2026',year:2026,month:2,weeks:{1:emptyWeek(),2:week2Data(),3:week3Data(),4:week4Data()}};
+  }
+  if(APP.months['2026-03']&&sum(APP.months['2026-03'].weeks[4]?.categories||[])===0){
+    APP.months['2026-03'].weeks[4]=week4Data();
+  }
+  if(!APP.months[APP.currentMonthKey]) APP.currentMonthKey=Object.keys(APP.months)[0];
+  if(!APP.currentView) APP.currentView='week';
+  if(!APP.currentWeek) APP.currentWeek=3;
+
+  updateNav();updateTabs();
+  if(APP.currentView==='monthly'){
+    $('weekly-view').style.display='none';
+    $('monthly-view').style.display='';
+    renderMonthly();
+  } else {
+    $('monthly-view').style.display='none';
+    renderWeek();
+  }
+
+  /* show save status based on whether a cloud ID exists */
+  const hasSave=!!localStorage.getItem(CLOUD_ID_KEY);
+  setStatus(hasSave?'saved':'idle', hasSave?'Previous save found — click Load Saved to restore':'Not saved — edits lost on refresh');
+})();
 </script>
 </body>
 </html>

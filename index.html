@@ -407,7 +407,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-we
     <div class="save-bar-right">
       <button class="sbtn sbtn-reset" onclick="resetData()">&#8635; Reset</button>
       <button class="sbtn sbtn-load" onclick="loadFromCloud()" id="load-btn">&#8593; Load Saved</button>
-      <button class="sbtn sbtn-save" onclick="saveOnline()" id="save-btn">&#9729; Save Online</button>
+      <button class="sbtn sbtn-save" onclick="saveOnline()" id="save-btn">&#9729; Save Online#8595; Save File</button>
     </div>
   </div>
 
@@ -506,7 +506,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-we
     <div class="save-bar-right">
       <button class="sbtn sbtn-reset" onclick="resetData()">&#8635; Reset</button>
       <button class="sbtn sbtn-load" onclick="loadFromCloud()" id="load-btn2">&#8593; Load Saved</button>
-      <button class="sbtn sbtn-save" onclick="saveOnline()" id="save-btn2">&#9729; Save Online</button>
+      <button class="sbtn sbtn-save" onclick="saveOnline()" id="save-btn2">&#9729; Save Online#8595; Save File</button>
     </div>
   </div>
 
@@ -756,52 +756,53 @@ function setBusy(busy){
 }
 
 /* ══════════════════════════════
-   SAVE (localStorage)
+   SAVE — embeds data into HTML file and downloads it
 ══════════════════════════════ */
 async function saveOnline(){
   saveComments();saveHeaderText();
   setStatus('saving');setBusy(true);
   try{
-    const payload=JSON.stringify(APP);
-    localStorage.setItem(SAVE_KEY, payload);
-    setStatus('saved','Saved locally ✓ — data persists on this browser');
-    toast('✓ Saved successfully!','success');
+    localStorage.setItem(LS_KEY, JSON.stringify(APP));
+    const html = document.documentElement.outerHTML;
+    const appJson = JSON.stringify(APP);
+    const updated = html.replace(
+      /let APP\s*=\s*\{[\s\S]*?\n\};\s*\n/,
+      'let APP = ' + appJson + ';\n'
+    );
+    const blob = new Blob([updated], {type:'text/html'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'ads_report_manager.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    setStatus('saved','Saved ✓ — open the downloaded file to keep your data');
+    toast('✓ Saved! Use the downloaded file — it has your data baked in.','success',5000);
   }catch(err){
     console.error('Save error:',err);
-    setStatus('error','Save failed — storage may be full');
-    toast('✗ Save failed. Storage may be full.','error');
+    setStatus('error','Save failed — try again');
+    toast('✗ Save failed.','error');
   }finally{setBusy(false);}
 }
 
 /* ══════════════════════════════
-   LOAD (localStorage)
+   LOAD — restores from localStorage (current session)
 ══════════════════════════════ */
 async function loadFromCloud(){
-  const raw=localStorage.getItem(SAVE_KEY);
-  if(!raw){
-    toast('No save found. Click "Save" first.','warning');
-    return;
-  }
+  const raw=localStorage.getItem(LS_KEY);
+  if(!raw){ toast('No session save. Use a previously saved .html file.','warning'); return; }
   setStatus('loading');setBusy(true);
   try{
-    const data=JSON.parse(raw);
-    APP=data;
+    APP=JSON.parse(raw);
     setStatus('saved','Loaded ✓');
     toast('✓ Data loaded!','success');
     updateNav();updateTabs();
     if(APP.currentView==='monthly'){
-      $('weekly-view').style.display='none';
-      $('monthly-view').style.display='';
-      renderMonthly();
+      $('weekly-view').style.display='none'; $('monthly-view').style.display=''; renderMonthly();
     } else {
-      $('monthly-view').style.display='none';
-      $('weekly-view').style.display='';
-      renderWeek();
+      $('monthly-view').style.display='none'; $('weekly-view').style.display=''; renderWeek();
     }
   }catch(err){
-    console.error('Load error:',err);
-    setStatus('error','Load failed — data may be corrupted');
-    toast('✗ Could not load save. Try saving again.','error');
+    setStatus('error','Load failed'); toast('✗ Could not load.','error');
   }finally{setBusy(false);}
 }
 

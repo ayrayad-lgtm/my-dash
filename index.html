@@ -701,7 +701,7 @@ let APP = {
    Auto-save is intentionally OFF — edits are
    only pushed when Save Online is clicked.
 ═══════════════════════════════════════════ */
-const SAVE_KEY = 'ads_report_data';
+const SAVE_KEY = LS_KEY; // same key — all saves go to one place
 
 /* ── TOAST ── */
 let _toastTimer;
@@ -826,7 +826,9 @@ function resetData(){
 
 /* ── stub — no auto-save ── */
 function loadState(){}
-function saveState(){}
+function saveState(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(APP)); } catch(e){ console.warn('saveState failed',e); }
+}
 
 
 /* ═══════════════════════════════════════════
@@ -1322,16 +1324,15 @@ function updateNav(){
 function exportPDF(){window.print();}
 
 /* ═══════════════════════════════════════════
-   INIT — no auto-load; user clicks Load Saved
+   INIT — auto-restores from localStorage
 ═══════════════════════════════════════════ */
 (function init(){
-  // ensure March 2026 exists with all week data
-  if(!APP.months['2026-03']){
-    APP.months['2026-03']={label:'March 2026',year:2026,month:2,weeks:{1:emptyWeek(),2:week2Data(),3:week3Data(),4:week4Data()}};
+  // Auto-restore saved data on every page load
+  const saved = localStorage.getItem(LS_KEY);
+  if(saved){
+    try{ APP = JSON.parse(saved); } catch(e){ console.warn('Could not restore save, using defaults',e); }
   }
-  if(APP.months['2026-03']&&sum(APP.months['2026-03'].weeks[4]?.categories||[])===0){
-    APP.months['2026-03'].weeks[4]=week4Data();
-  }
+
   if(!APP.months[APP.currentMonthKey]) APP.currentMonthKey=Object.keys(APP.months)[0];
   if(!APP.currentView) APP.currentView='week';
   if(!APP.currentWeek) APP.currentWeek=3;
@@ -1346,9 +1347,8 @@ function exportPDF(){window.print();}
     renderWeek();
   }
 
-  /* show save status based on whether a cloud ID exists */
-  const hasSave=!!localStorage.getItem(SAVE_KEY);
-  setStatus(hasSave?'saved':'idle', hasSave?'Previous save found — click Load Saved to restore':'Not saved — edits lost on refresh');
+  const hasSave=!!saved;
+  setStatus(hasSave?'saved':'idle', hasSave?'Auto-restored from last save ✓':'Not saved — edits lost on refresh');
 })();
 </script>
 </body>

@@ -701,8 +701,7 @@ let APP = {
    Auto-save is intentionally OFF — edits are
    only pushed when Save Online is clicked.
 ═══════════════════════════════════════════ */
-const CLOUD_ID_KEY = 'ads_report_cloud_id';
-const API_BASE     = 'https://jsonblob.com/api/jsonBlob';
+const SAVE_KEY = 'ads_report_data';
 
 /* ── TOAST ── */
 let _toastTimer;
@@ -718,9 +717,9 @@ function toast(msg, type='', dur=3200){
 function setStatus(state, msg){
   const cfg={
     idle:   {dot:'',         label:'Not saved — edits lost on refresh', lc:''},
-    saving: {dot:'saving',   label:msg||'Saving to cloud…',             lc:''},
-    loading:{dot:'saving',   label:msg||'Loading from cloud…',          lc:''},
-    saved:  {dot:'saved',    label:msg||'Saved to cloud ✓',             lc:'saved'},
+    saving: {dot:'saving',   label:msg||'Saving…',                      lc:''},
+    loading:{dot:'saving',   label:msg||'Loading…',                     lc:''},
+    saved:  {dot:'saved',    label:msg||'Saved locally ✓',              lc:'saved'},
     error:  {dot:'error',    label:msg||'Error — try again',            lc:'error'},
   }[state]||{dot:'',label:msg||'',lc:''};
 
@@ -731,22 +730,20 @@ function setStatus(state, msg){
     const el=$(id);if(el){el.textContent=cfg.label;el.className='save-label '+cfg.lc;}
   });
 
-  const id=localStorage.getItem(CLOUD_ID_KEY)||'';
-  const show=!!id;
-  const shortId=id?id.slice(-10):'';
+  const hasSave=!!localStorage.getItem(SAVE_KEY);
   ['','2'].forEach(s=>{
     const w=$('scode-wrap'+s);const t=$('scode-text'+s);
-    if(w) w.style.display=show?'flex':'none';
-    if(t) t.textContent=show?`ID: …${shortId}`:'';
+    if(w) w.style.display=hasSave?'flex':'none';
+    if(t) t.textContent=hasSave?'Saved locally':'' ;
   });
 }
 
-/* ── COPY ID ── */
+/* ── COPY / EXPORT ── */
 function copyCode(){
-  const id=localStorage.getItem(CLOUD_ID_KEY)||'';
-  if(!id){toast('Nothing saved yet','warning');return;}
-  navigator.clipboard?.writeText(id).then(()=>toast('Save ID copied!','success')).catch(()=>{
-    prompt('Copy your Save ID:',id);
+  const raw=localStorage.getItem(SAVE_KEY)||'';
+  if(!raw){toast('Nothing saved yet','warning');return;}
+  navigator.clipboard?.writeText(raw).then(()=>toast('Data copied to clipboard!','success')).catch(()=>{
+    prompt('Copy your saved data:',raw);
   });
 }
 
@@ -759,66 +756,38 @@ function setBusy(busy){
 }
 
 /* ══════════════════════════════
-   SAVE ONLINE
+   SAVE (localStorage)
 ══════════════════════════════ */
 async function saveOnline(){
   saveComments();saveHeaderText();
-  const payload=JSON.stringify(APP);
-  const existingId=localStorage.getItem(CLOUD_ID_KEY);
-
   setStatus('saving');setBusy(true);
   try{
-    let blobId;
-    if(existingId){
-      /* update existing */
-      const res=await fetch(`${API_BASE}/${existingId}`,{
-        method:'PUT',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:payload
-      });
-      if(!res.ok) throw new Error(`PUT ${res.status}`);
-      blobId=existingId;
-    } else {
-      /* create new */
-      const res=await fetch(API_BASE,{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:payload
-      });
-      if(!res.ok) throw new Error(`POST ${res.status}`);
-      const loc=res.headers.get('Location')||'';
-      blobId=loc.split('/').pop();
-      if(!blobId) throw new Error('No blob ID returned');
-    }
-    localStorage.setItem(CLOUD_ID_KEY,blobId);
-    setStatus('saved','Saved to cloud ✓ — refresh will reload this save');
-    toast('✓ Saved online successfully!','success');
+    const payload=JSON.stringify(APP);
+    localStorage.setItem(SAVE_KEY, payload);
+    setStatus('saved','Saved locally ✓ — data persists on this browser');
+    toast('✓ Saved successfully!','success');
   }catch(err){
     console.error('Save error:',err);
-    setStatus('error','Save failed — check internet connection');
-    toast('✗ Save failed. Check your internet.','error');
+    setStatus('error','Save failed — storage may be full');
+    toast('✗ Save failed. Storage may be full.','error');
   }finally{setBusy(false);}
 }
 
 /* ══════════════════════════════
-   LOAD FROM CLOUD
+   LOAD (localStorage)
 ══════════════════════════════ */
 async function loadFromCloud(){
-  const blobId=localStorage.getItem(CLOUD_ID_KEY);
-  if(!blobId){
-    toast('No save found. Click "Save Online" first.','warning');
+  const raw=localStorage.getItem(SAVE_KEY);
+  if(!raw){
+    toast('No save found. Click "Save" first.','warning');
     return;
   }
   setStatus('loading');setBusy(true);
   try{
-    const res=await fetch(`${API_BASE}/${blobId}`,{
-      headers:{'Accept':'application/json'}
-    });
-    if(!res.ok) throw new Error(`GET ${res.status}`);
-    const data=await res.json();
+    const data=JSON.parse(raw);
     APP=data;
-    setStatus('saved','Loaded from cloud ✓');
-    toast('✓ Data loaded from cloud!','success');
+    setStatus('saved','Loaded ✓');
+    toast('✓ Data loaded!','success');
     updateNav();updateTabs();
     if(APP.currentView==='monthly'){
       $('weekly-view').style.display='none';
@@ -831,7 +800,7 @@ async function loadFromCloud(){
     }
   }catch(err){
     console.error('Load error:',err);
-    setStatus('error','Load failed — save may have expired');
+    setStatus('error','Load failed — data may be corrupted');
     toast('✗ Could not load save. Try saving again.','error');
   }finally{setBusy(false);}
 }
@@ -1378,7 +1347,7 @@ function exportPDF(){window.print();}
   }
 
   /* show save status based on whether a cloud ID exists */
-  const hasSave=!!localStorage.getItem(CLOUD_ID_KEY);
+  const hasSave=!!localStorage.getItem(SAVE_KEY);
   setStatus(hasSave?'saved':'idle', hasSave?'Previous save found — click Load Saved to restore':'Not saved — edits lost on refresh');
 })();
 </script>
